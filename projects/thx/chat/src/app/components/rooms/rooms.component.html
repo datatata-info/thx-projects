@@ -1,0 +1,24 @@
+<div>
+    <div>nickname: {{nickname}}</div>
+    <div>
+        Available rooms: <br>
+        @for(room of availableRooms; track room) {
+            <button [routerLink]="room.id">{{room.config.roomName}}</button>
+        }
+    </div>
+    <div>
+        New Room:
+        <form [formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
+            <div>
+                <label for="roomName">Room Name</label>
+                <input type="text" name="roomName" id="roomName" formControlName="roomName">
+            </div>
+            <div>
+                <label for="public">Public</label>
+                <input type="checkbox" name="public" id="public" formControlName="public">
+            </div>
+
+            <button type="submit">Create Room</button>
+        </form>
+    </div>
+</div>

@@ -4,6 +4,17 @@
   "compileOnSave": false,
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
+    "paths": {
+      "@thx/dtmqtt": [
+        "./dist/thx/dtmqtt"
+      ],
+      "@thx/socket": [
+        "./dist/thx/socket"
+      ],
+      "dtmqtt": [
+        "./dist/dtmqtt"
+      ]
+    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,

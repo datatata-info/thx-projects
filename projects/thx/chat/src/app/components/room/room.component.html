@@ -1,0 +1,18 @@
+@if(room) {
+    <div><strong>🌸 {{room.config.roomName}}</strong></div>
+    @if(user) {
+        <div>{{user.nickname}}</div>
+    }
+}
+<div>
+    @for(message of messages; track message) {
+        <thx-message [message]="message"></thx-message>
+    }
+</div>
+
+<div>
+    <form [formGroup]="sendMessageForm" (ngSubmit)="sendMessage()">
+        <input type="text" name="message" id="message" formControlName="message">
+        <button type="submit">Send</button>
+    </form>
+</div>
