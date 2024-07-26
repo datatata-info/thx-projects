@@ -3,39 +3,6 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "@thx/dtmqtt": {
-      "projectType": "library",
-      "root": "projects/thx/dtmqtt",
-      "sourceRoot": "projects/thx/dtmqtt/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "project": "projects/thx/dtmqtt/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/thx/dtmqtt/tsconfig.lib.prod.json"
-            },
-            "development": {
-              "tsConfig": "projects/thx/dtmqtt/tsconfig.lib.json"
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "tsConfig": "projects/thx/dtmqtt/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
-          }
-        }
-      }
-    },
     "@thx/chat": {
       "projectType": "application",
       "schematics": {
