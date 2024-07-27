@@ -26,7 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.user = new User(
       this.emojiService.getRandomEmoji('Animals & Nature'),
-      this.colorService.generateHslaColors(80, 50)[0]
+      this.colorService.generateHslaColors(70, 40)[0]
     );
     // CREATE AND LOGIN USER EVERY NEW SESSION
     // console.log('USER WITH COLOR', this.user);
