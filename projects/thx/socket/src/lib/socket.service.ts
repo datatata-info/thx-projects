@@ -6,7 +6,7 @@ import * as forge from 'node-forge';
 // uuid
 import { v4 as uuidv4 } from 'uuid';
 // rxjs
-import { Subject } from 'rxjs';
+import { Subject, BehaviorSubject } from 'rxjs';
 
 let HOST: string, PORT: number, USE_ENCRYPTION: boolean;
 
@@ -57,6 +57,13 @@ interface SocketCallback {
   data?: any
 }
 
+interface LocalStorageCert {
+  created: number,
+  expiresAfter: number,
+  publicPem: string,
+  privatePem: string
+}
+
 
 
 @Injectable({
@@ -75,6 +82,7 @@ export class SocketService {
   public user!: User;
   public connected: boolean = false;
 
+  public onCertGenerated: BehaviorSubject<boolean> = new BehaviorSubject(false);
   public onNewRoom: Subject<Room> = new Subject();
   public onAvailableRooms: Subject<Room[]> = new Subject();
   public onRoomClosed: Subject<string> = new Subject();
@@ -86,13 +94,47 @@ export class SocketService {
     if (PORT) this.socketPort = PORT;
     if (USE_ENCRYPTION === false) this.useEncryption = false;
     if (this.useEncryption) {
-      forge.pki.rsa.generateKeyPair({ bits: 2048, e: 0x10001 }, (error: any, keyPair: forge.pki.rsa.KeyPair) => {
-        if (error) console.error(error);
-        console.log('keyPair generated');
-        this.keyPair = keyPair;
-      });
+      // check local storage
+      const savedCert = localStorage.getItem('thx-cert');
+      if (savedCert) {
+        const cert: LocalStorageCert = JSON.parse(savedCert);
+        const now = Date.now();
+        if (now >= cert.created + cert.expiresAfter) { // cert expired, generate new
+          this.generateKeyPair();
+        } else {
+          this.keyPair = {
+            publicKey: forge.pki.publicKeyFromPem(cert.publicPem),
+            privateKey: forge.pki.privateKeyFromPem(cert.privatePem)
+          }
+          setTimeout(() => {
+            this.onCertGenerated.next(true);
+            // this.onCertGenerated.complete();
+          }, 200);
+          
+        }
+
+      } else { // generate new and save to localStorage
+        this.generateKeyPair();
+      }
     }
     // this.listenSocket();
+  }
+
+  private generateKeyPair(): void {
+    forge.pki.rsa.generateKeyPair({ bits: 2048, e: 0x10001 }, (error: any, keyPair: forge.pki.rsa.KeyPair) => {
+      if (error) console.error(error);
+      console.log('keyPair generated');
+      this.keyPair = keyPair;
+      const localStorageCert: LocalStorageCert = {
+        created: Date.now(),
+        expiresAfter: 24 * 60 * 60 * 1000, // one day
+        publicPem: forge.pki.publicKeyToPem(this.keyPair.publicKey),
+        privatePem: forge.pki.privateKeyToPem(this.keyPair.privateKey)
+      }
+      this.onCertGenerated.next(true);
+      // this.onCertGenerated.complete();
+      localStorage.setItem('thx-cert', JSON.stringify(localStorageCert));
+    });
   }
 
   connect(): void {
@@ -153,6 +195,7 @@ export class SocketService {
     const subject: Subject<any> = new Subject();
     this.socket.emit('close_room', roomId, this.user.id, (result: SocketCallback) => {
       if (result.success && result.data) {
+        this.sendMessage(`🌘 Room is closing ...`, roomId);
         subject.next(result);
       } else {
         // emit error (cannot close room, im not an admin of room)
@@ -160,6 +203,10 @@ export class SocketService {
       }
     });
     return subject;
+  }
+
+  leaveRoom(roomId: string): void {
+    this.socket.emit('leave_room', roomId, this.user.id);
   }
 
   roomExist(roomId: string): Subject<boolean> {
@@ -227,9 +274,14 @@ export class SocketService {
       }
     });
 
-    this.socket.on('user_joined_room', (user: User) => {
+    this.socket.on('user_joined_room', (user: User, roomId: string) => {
       this.onUserJoinedRoom.next(user);
+      console.log('user_joined_room', user.id);
     });
+
+    this.socket.on('user_leaved_room', (userId: string) => {
+      console.warn(`----- user ${userId} leaved room`);
+    })
 
     this.socket.on('room_closed', (roomId: string) => {
       this.onRoomClosed.next(roomId);
@@ -246,11 +298,12 @@ export class SocketService {
     // accepting my handshake request
     this.socket.on('accept_handshake', (roomId: string, userId: string, publicKey: any) => {
       // console.log('accept_handshake by', userId);
-      // console.log('accept_handshake publicKey', publicKey);
       this.userKeys[userId] = forge.pki.publicKeyFromPem(publicKey);
       // send join message
-      this.sendMessage('Joined room.', roomId);
-      // console.log('publicKey', this.userKeys[userId]);
+      // TODO: `BUG` this fire as much time as users in room are
+      // ... sending every time the handshake with all connected users where established :/
+      // possible solve: SEND MESSAGE TO SPECIFIC USER or SEND JOIN ROOM FROM DIFFERENT PLACE
+      this.sendMessage('Joined chat.', roomId);
     });
 
     this.socket.on('message', (message: Message) => {
