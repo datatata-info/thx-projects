@@ -15,25 +15,25 @@ export class TimerService {
   constructor() { }
 
   // timer
-  subscribeTimer(): BehaviorSubject<TimerData> | boolean {
+  subscribeTimer(): BehaviorSubject<TimerData> {
     let startTime: number = performance.now();
     let timerCanceled: boolean = false;
-    let cancelSub: Subscription = new Subscription();
-    const subject: BehaviorSubject<TimerData> | boolean = new BehaviorSubject({
+    // let cancelSub: Subscription = new Subscription();
+    const subject: BehaviorSubject<TimerData> = new BehaviorSubject({
       readable: this.msToString(0),
       countable: 0
     });
 
-    cancelSub = subject.subscribe({
-      next: (canceled: TimerData | boolean) => {
-        if (canceled === true) {
-          timerCanceled = true;
-          console.log('timer canceled'); // test
-          cancelSub.unsubscribe();
-          subject.complete(); // complete subject
-        }
-      }
-    });
+    // cancelSub = subject.subscribe({
+    //   next: (canceled: TimerData | boolean) => {
+    //     if (canceled === true) {
+    //       timerCanceled = true;
+    //       console.log('timer canceled'); // test
+    //       cancelSub.unsubscribe();
+    //       subject.complete(); // complete subject
+    //     }
+    //   }
+    // });
 
     const count = () => {
       const time = performance.now() - startTime;
@@ -48,7 +48,7 @@ export class TimerService {
   }
 
   // count down
-  subscribeCountdown(duration: number, startFrom?: number): BehaviorSubject<TimerData> {
+  subscribeTimerWithDuration(duration: number, startFrom?: number): BehaviorSubject<TimerData> {
     const startTime: number = startFrom ? startFrom : Date.now();
     const subject: BehaviorSubject<TimerData> = new BehaviorSubject({
       readable: this.msToString(duration),
@@ -57,12 +57,14 @@ export class TimerService {
   
     const count = () => {
       const distance = Date.now() - startTime;
+      // console.log('countdown distance', distance);
       if (distance <= duration) {
         subject.next({
           readable: this.msToString(duration - distance),
           countable: duration - distance
         });
         requestAnimationFrame(count);
+        
       } else {
         subject.next({
           readable: this.msToString(0),

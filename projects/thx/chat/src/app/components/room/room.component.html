@@ -1,18 +1,64 @@
 @if(room) {
-    <div><strong>🌸 {{room.config.roomName}}</strong></div>
-    @if(user) {
-        <div>{{user.nickname}}</div>
-    }
-}
-<div>
-    @for(message of messages; track message) {
-        <thx-message [message]="message"></thx-message>
-    }
-</div>
+    <div class="chat-header">
+            <div class="chat-controls">
+                <div class="leave-chat">
+                    <button class="large" mat-icon-button>
+                        <mat-icon class="material-symbols-outlined" inline="true">arrow_back</mat-icon>
+                    </button>
+                </div>
+                <div class="chat-info">
+                    <div>
+                        @if(room.config.public) {
+                            <mat-icon class="material-symbols-outlined">public</mat-icon>
+                        }
+                        <mat-icon class="material-symbols-outlined">encrypted</mat-icon>
+                    </div>
+                    <h4>{{room.config.roomName}}</h4>
+                </div>
+                <div class="close-chat">
+                    @if(isAdmin) {
+                        <button class="large" mat-icon-button>
+                            <mat-icon class="material-symbols-outlined" inline="true">close</mat-icon>
+                        </button>
+                    }
+                </div>
+            </div>
+            <!-- stats -->
+            <thx-chat-stats></thx-chat-stats>
+    </div>
+    
+    <div class="chat-messages">
+        @for(message of messages; track message) {
+            @if(message.user.id === user.id) {
+                <thx-message
+                    class="my-message"
+                    [message]="message"
+                    (expired)="messageExpired($event)"
+                ></thx-message>
+            } @else {
+                <thx-message
+                    [message]="message"
+                    (expired)="messageExpired($event)"
+                ></thx-message>
+            }
+            
+        }
+    </div>
 
-<div>
-    <form [formGroup]="sendMessageForm" (ngSubmit)="sendMessage()">
-        <input type="text" name="message" id="message" formControlName="message">
-        <button type="submit">Send</button>
-    </form>
-</div>
+    <div class="chat-input">
+        <thx-message-input [color]="user.color" [roomId]="room.id" (onMessage)="pushMessage($event)"></thx-message-input>
+    </div>
+
+    <div class="chat-options">
+        <button mat-icon-button class="large">
+            <mat-icon class="material-symbols-outlined" inline="true">record_voice_over</mat-icon>
+        </button>
+        <button mat-icon-button class="large">
+            <mat-icon class="material-symbols-outlined" inline="true">notifications</mat-icon>
+        </button>
+        <span class="spacer"></span>
+        <button mat-icon-button class="large">
+            <mat-icon class="material-symbols-outlined" inline="true">ios_share</mat-icon>
+        </button>
+    </div>
+}

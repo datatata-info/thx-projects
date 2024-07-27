@@ -1,1 +1,21 @@
-<div class="message">{{message.user.nickname}}: {{message.value}} {{message.time | date: 'shortTime'}}</div>
+<div class="message-meta">
+    <div class="user-nickname">{{message.user.nickname}}</div>
+    <div class="sent">{{message.time | date: 'hh:mm'}}</div>
+</div>
+<div class="message" [ngStyle]="{borderColor: userColor ? userColor : 'unset'}">
+    <div class="message-content">{{message.value}}</div>
+    <span class="spacer"></span>
+    <div class="message-timer">
+        <mat-progress-spinner
+            class="message-countdown-spinner"
+            mode="determinate"
+            [ngStyle]="{'--mdc-circular-progress-active-indicator-color' : userColor ? userColor : 'unset'}"
+            [value]="getExpiryPercent()"
+            diameter="24"
+            strokeWidth="8"
+        ></mat-progress-spinner>
+    </div>
+</div>
+<div class="message-quotes"></div>
+<div class="message-reactions"></div>
+<div class="message-controls"></div>

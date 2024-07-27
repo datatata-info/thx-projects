@@ -5,6 +5,8 @@ import { Injectable } from '@angular/core';
 })
 export class ChatService {
 
+  useVoiceOver: boolean = true;
+
   constructor() { }
 
   getRoomHash(topic: string): number {

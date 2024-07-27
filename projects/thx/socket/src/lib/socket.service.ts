@@ -39,12 +39,18 @@ export interface RoomConfig {
   public: boolean
 }
 
-export interface User {
-  id: string,
-  nickname: string
+export class User {
+  id: string = uuidv4();
+  nickname!: string;
+  color?: string;
+  constructor(nickname: string, color?: string) {
+    this.nickname = nickname;
+    this.color = color ? color : ''
+  }
 }
 
 export interface Message {
+  id: string,
   user: User,
   time: Date,
   value: string,
@@ -147,10 +153,11 @@ export class SocketService {
     this.listenSocket();
   }
 
-  login(): void {
-    if (this.user) {
+  login(user: User): void {
+    // if (user || this.user) {
+      this.user = user;
       this.socket.emit('login', this.user);
-    }
+    // }
   }
 
   getAvailableRooms(): void {
@@ -219,6 +226,7 @@ export class SocketService {
 
   sendMessage(value: string, roomId: string): Message {
     const message = {
+      id: uuidv4(),
       user: this.user,
       time: new Date(),
       expiry: 60 * 1000,

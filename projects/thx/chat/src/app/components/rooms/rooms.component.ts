@@ -1,23 +1,31 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 // router
 import { Router, RouterModule } from '@angular/router';
+// material
+import { MaterialModule } from '../../modules/material/material.module';
+
 // models
-// import { MqttMessage } from '../../models/mqtt-message';
 // form
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 // services
 import { AnimalsService } from '../../services/animals/animals.service';
-// import { ChatMqttService } from '../../services/chat-mqtt/chat-mqtt.service';
 import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { ChatService } from '../../services/chat/chat.service';
+import { MessageInputComponent } from '../message-input/message-input.component';
 // rxjs
 import { Subscription } from 'rxjs'; 
-import { Room, RoomConfig } from '@thx/socket';
+import { Room } from '@thx/socket';
 
 @Component({
   selector: 'thx-rooms',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    FormsModule, 
+    ReactiveFormsModule, 
+    RouterModule, 
+    MaterialModule,
+    MessageInputComponent
+  ],
   templateUrl: './rooms.component.html',
   styleUrl: './rooms.component.scss'
 })
@@ -58,10 +66,11 @@ export class RoomsComponent implements OnInit, OnDestroy {
     console.log('-----rooms init-----');
     this.chatSocketService.getAvailableRooms();
     if (!this.chatSocketService.user) {
-      this.nickname = this.animalService.getRandomAnimal();
-      // this.chatMqttService.nickname = this.nickname;
-      console.log('set nickname', this.nickname);
-      this.chatSocketService.setUserNickname(this.nickname);
+      console.warn('NO USER? :(');
+      // this.nickname = this.animalService.getRandomAnimal();
+      // // this.chatMqttService.nickname = this.nickname;
+      // console.log('set nickname', this.nickname);
+      // this.chatSocketService.setUserNickname(this.nickname);
     } else {
       this.nickname = this.chatSocketService.user.nickname;
     }
@@ -117,7 +126,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
           this.chatSocketService.join(room);
           this.createRoomSub.unsubscribe();
           this.roomForm.reset();
-          this.router.navigate([`/${room.id}`]);
+          this.router.navigate([`/chat/${room.id}`]);
         },
         error: (e: any) => console.error(e)
       })

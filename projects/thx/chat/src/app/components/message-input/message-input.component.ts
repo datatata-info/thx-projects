@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { Message } from '@thx/socket';
@@ -11,20 +11,27 @@ import { MaterialModule } from '../../modules/material/material.module';
   templateUrl: './message-input.component.html',
   styleUrl: './message-input.component.scss'
 })
-export class MessageInputComponent {
-  @Input('roomId') roomId!: string;
-  @Output('onMessage') onMessage: EventEmitter<Message> = new EventEmitter()
+export class MessageInputComponent implements OnInit {
 
-  constructor(
-    private chatSocketService: ChatSocketService
-  ) {}
+  @Input('roomId') roomId!: string;
+  @Input('color') color!: string | undefined;
+  @Output('onMessage') onMessage: EventEmitter<Message> = new EventEmitter()
 
   sendMessageForm: FormGroup = new FormGroup({
     message: new FormControl('')
   });
 
+  constructor(
+    private chatSocketService: ChatSocketService
+  ) {}
+
+  ngOnInit(): void {
+    console.log('input color?', this.color);
+  }
+
   sendMessage(): void {
     if (this.roomId) {
+      
       console.log('form value', this.sendMessageForm.value);
       const message = this.chatSocketService.sendMessage(this.sendMessageForm.value.message, this.roomId);
       this.onMessage.next(message);

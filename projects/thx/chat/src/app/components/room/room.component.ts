@@ -1,20 +1,28 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormControl, ReactiveFormsModule, FormGroup } from '@angular/forms';
+// material
+import { MaterialModule } from '../../modules/material/material.module';
 // components
 import { MessageComponent } from '../message/message.component';
+import { MessageInputComponent } from '../message-input/message-input.component';
+import { ChatStatsComponent } from '../chat-stats/chat-stats.component';
 // services
 import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { AudioService } from '../../services/audio/audio.service';
 import { AnimalsService } from '../../services/animals/animals.service';
 // rxjs
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 import { Message, Room, User } from '@thx/socket';
 
 @Component({
   selector: 'thx-room',
   standalone: true,
-  imports: [ MessageComponent, ReactiveFormsModule ],
+  imports: [
+    MessageComponent,
+    MaterialModule,
+    MessageInputComponent,
+    ChatStatsComponent
+  ],
   templateUrl: './room.component.html',
   styleUrl: './room.component.scss'
 })
@@ -22,17 +30,21 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   room!: Room;
   user!: User;
+  isAdmin: boolean = false;
 
   private routeSub: Subscription = new Subscription();
   private roomExistSub: Subscription = new Subscription();
   private joinRoomSub: Subscription = new Subscription();
   private onMessageSub: Subscription = new Subscription();
+  private onRoomClosed: Subscription = new Subscription();
+  private onRoomEstablishedSub: Subscription = new Subscription();
+
+  private roomEstablished: Subject<boolean> = new Subject();
+  private CLOSE_ROOM_IN: number = 10 * 1000;
 
   messages: Message[] = [];
 
-  sendMessageForm: FormGroup = new FormGroup({
-    message: new FormControl('')
-  });
+  private checkingMessages: boolean = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -55,13 +67,16 @@ export class RoomComponent implements OnInit, OnDestroy {
             next: (roomExist: boolean) => {
               console.log('roomExist?', roomExist);
               if (roomExist) {
+                if (this.room && this.user) this.roomEstablished.next(true);
                 // room exist and im not joined
+                console.log('isRoomJoined?', this.chatSocketService.isRoomJoined(roomId));
                 if (!this.chatSocketService.isRoomJoined(roomId)) {
                   console.log('im not joined, should join');
                   if (!this.chatSocketService.user) {
-                    const nickname = this.animalService.getRandomAnimal();
-                    this.chatSocketService.setUserNickname(nickname);
-                    this.user = this.chatSocketService.user;
+                    console.log('NO USER? :(');
+                    // const nickname = this.animalService.getRandomAnimal();
+                    // this.chatSocketService.setUserNickname(nickname);
+                    // this.user = this.chatSocketService.user;
                   }
                   
                   // maybe wait a bit or setUserNickname with callback
@@ -69,6 +84,7 @@ export class RoomComponent implements OnInit, OnDestroy {
                     next: (room: Room | null) => {
                       if (room) {
                         this.room = room;
+                        if (this.room && this.user) this.roomEstablished.next(true);
                         console.log('room joined', room);
                         this.chatSocketService.join(room);
                         // request handshake
@@ -100,42 +116,68 @@ export class RoomComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
 
-    this.checkMessagesExpiration();
-  }
-
-  checkMessagesExpiration(): void {
-    const loop = () => {
-      // console.log('check expiration');
-      const now = Date.now();
-      for (let i = 0; i < this.messages.length; i++) {
-        const m = this.messages[i];
-        const created = new Date(m.time).getTime();
-        const expiration = m.expiry;
-        if (now >= created + expiration) {
-          // console.log('should delete message', m);
-          this.messages.splice(i, 1);
-          this.playSoundOut();
+    this.onRoomClosed = this.chatSocketService.onRoomClosed.subscribe({
+      next: (roomId: string) => {
+        if (this.room && this.room.id === roomId) {
+          this.chatSocketService.exitRoom(roomId);
+          console.warn(`ROOM IS CLOSING IN ${this.CLOSE_ROOM_IN / 1000}s`);
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, this.CLOSE_ROOM_IN);
         }
-      }
-      requestAnimationFrame(loop.bind(this));
-    }
-    loop();
+      },
+      error: (e: any) => console.error(e)
+    });
+
+    this.onRoomEstablishedSub = this.roomEstablished.subscribe({
+      next: (established: boolean) => {
+        if (established) {
+          if (this.room.admin === this.user.id) this.isAdmin = true;
+          this.onRoomEstablishedSub.unsubscribe();
+        }
+      },
+      error: (e: any) => console.error(e)
+    });
+
+    // this.checkMessagesExpiration();
   }
 
+  messageExpired(id: string): void {
+    console.log('MESSAGE HAS BEEN EXPIRED!', id);
+    for (let i = 0; i < this.messages.length; i++) {
+      const m = this.messages[i];
+      if (m.id === id) {
+        this.messages.splice(i, 1);
+        this.playSoundOut();
+      }
+    }
+  }
 
+  leaveRoom(): void {
+    // TODO: even if admin, leave with or without closing (let the room open)
+    this.chatSocketService.exitRoom(this.room.id);
+  }
 
   ngOnDestroy(): void {
+    this.checkingMessages = false; // stop requestAnimationFrame
+    this.messages.length = 0; // remove all messages
     this.roomExistSub.unsubscribe();
     this.routeSub.unsubscribe();
     this.joinRoomSub.unsubscribe();
     this.onMessageSub.unsubscribe();
+    this.onRoomClosed.unsubscribe();
+    this.onRoomEstablishedSub.unsubscribe();
+    if (this.room) {
+      if (this.isAdmin) {
+        this.chatSocketService.sendMessage(`🌘 Room is closing in ${this.CLOSE_ROOM_IN / 1000}s ...`, this.room.id);
+      }
+      this.chatSocketService.exitRoom(this.room.id);
+    }
+    
   }
 
-  sendMessage(): void {
-    console.log('form value', this.sendMessageForm.value);
-    const message = this.chatSocketService.sendMessage(this.sendMessageForm.value.message, this.room.id);
-    this.messages.push(message); // show my own message
-    this.sendMessageForm.reset();
+  pushMessage(message: Message): void {
+    this.messages.push(message);
   }
 
   private playSoundIn(): void {
