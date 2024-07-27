@@ -2,8 +2,8 @@
     <div class="chat-header">
             <div class="chat-controls">
                 <div class="leave-chat">
-                    <button class="large" mat-icon-button>
-                        <mat-icon class="material-symbols-outlined" inline="true">arrow_back</mat-icon>
+                    <button class="large" mat-icon-button (click)="leaveRoom()">
+                        <mat-icon color="primary" class="material-symbols-outlined" inline="true">arrow_back</mat-icon>
                     </button>
                 </div>
                 <div class="chat-info">
@@ -13,12 +13,12 @@
                         }
                         <mat-icon class="material-symbols-outlined">encrypted</mat-icon>
                     </div>
-                    <h4>{{room.config.roomName}}</h4>
+                    <h6>{{room.config.roomName}}</h6>
                 </div>
                 <div class="close-chat">
                     @if(isAdmin) {
-                        <button class="large" mat-icon-button>
-                            <mat-icon class="material-symbols-outlined" inline="true">close</mat-icon>
+                        <button class="large" mat-icon-button (click)="closeRoom()">
+                            <mat-icon color="accent" class="material-symbols-outlined" inline="true">close</mat-icon>
                         </button>
                     }
                 </div>
@@ -51,14 +51,14 @@
 
     <div class="chat-options">
         <button mat-icon-button class="large">
-            <mat-icon class="material-symbols-outlined" inline="true">record_voice_over</mat-icon>
+            <mat-icon color="primary" class="material-symbols-outlined" inline="true">record_voice_over</mat-icon>
         </button>
         <button mat-icon-button class="large">
-            <mat-icon class="material-symbols-outlined" inline="true">notifications</mat-icon>
+            <mat-icon color="primary" class="material-symbols-outlined" inline="true">notifications</mat-icon>
         </button>
         <span class="spacer"></span>
         <button mat-icon-button class="large">
-            <mat-icon class="material-symbols-outlined" inline="true">ios_share</mat-icon>
+            <mat-icon color="primary" class="material-symbols-outlined" inline="true">ios_share</mat-icon>
         </button>
     </div>
 }

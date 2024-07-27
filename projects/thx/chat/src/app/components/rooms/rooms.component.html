@@ -1,15 +1,16 @@
 <h3>Welcome {{nickname}}</h3>
 <div class="available-rooms">
     @if(availableRooms.length) {
-        <p>Join Public Chats</p>
-        @if(availableRooms.length < 10) {
-            @for(room of availableRooms; track room) {
-                <button mat-stroked-button [routerLink]="room.id">{{room.config.roomName}}</button>
+        <h6>Join Public Chats</h6>
+        <div class="rooms-list">
+            @if(availableRooms.length < 10) {
+                @for(room of availableRooms; track room) {
+                    <button mat-stroked-button [routerLink]="room.id">{{room.config.roomName}} <small>({{room.size}})</small></button>
+                }
+            } @else {
+                <!-- TODO: SHOW SEARCH IN CHATS -->
             }
-        } @else {
-            <!-- TODO: SHOW SEARCH IN CHATS -->
-        }
-        
+        </div>        
     }
     <!-- TEMP -->
     <!-- <thx-message-input roomId="test"></thx-message-input> -->
@@ -17,8 +18,8 @@
 <form class="new-room"[formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
     <div>
         <mat-form-field>
-            <mat-label>New Chat</mat-label>
-            <input formControlName="roomName" matInput placeholder="Ex. holidays in Rome" value="">
+            <mat-label>Start New Chat</mat-label>
+            <input formControlName="roomName" matInput maxlength="18" placeholder="Ex. holidays in Rome" value="">
         </mat-form-field>
         
         <section>
@@ -26,5 +27,5 @@
         </section>
     </div>
     
-    <button mat-flat-button [disabled]="!roomForm.valid" type="submit">Enter Chat {{roomForm.value.roomName}}</button>
+    <button mat-flat-button [disabled]="!roomForm.valid" type="submit">Enter Chat <strong>{{roomForm.value.roomName}}</strong></button>
 </form>

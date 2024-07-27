@@ -44,14 +44,15 @@ export class ChatSocketService extends SocketService {
     return this.rooms[roomId];
   }
 
-  exitRoom(roomId: string): void {
+  sendByAndLeaveRoom(roomId: string): void {
     for (let i = 0; i < this.joinedRooms.length; i++) {
       const id = this.joinedRooms[i];
       // console.log(`exit ${roomId}`, id);
       if (id === roomId) {
-        this.sendMessage('👋 ...leaving room', roomId);
+        this.sendMessage('👋 ...leaving chat', roomId);
         this.leaveRoom(roomId);
         this.joinedRooms.splice(i, 1);
+        break;
       }
     }
   }

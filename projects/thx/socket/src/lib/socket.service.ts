@@ -30,6 +30,7 @@ export interface Room {
   config: RoomConfig,
   appName: string,
   admin: string,
+  size: number,
 }
 
 export interface RoomConfig {
@@ -39,11 +40,18 @@ export interface RoomConfig {
   public: boolean
 }
 
+export interface User {
+  id: string,
+  nickname: string,
+  color?: string
+}
+
 export class User {
-  id: string = uuidv4();
+  id!: string;
   nickname!: string;
   color?: string;
   constructor(nickname: string, color?: string) {
+    this.id = uuidv4();
     this.nickname = nickname;
     this.color = color ? color : ''
   }
@@ -55,6 +63,21 @@ export interface Message {
   time: Date,
   value: string,
   expiry: number
+}
+
+export class Message {
+  id!: string;
+  user!: User;
+  time!: Date;
+  value!: string;
+  expiry!: number;
+  constructor(user: User, value: string, expiry?: number) {
+    this.id = uuidv4();
+    this.time = new Date();
+    this.expiry = expiry ? expiry : 60 * 1000;
+    this.user = user;
+    this.value = value;
+  }
 }
 
 interface SocketCallback {
@@ -94,6 +117,8 @@ export class SocketService {
   public onRoomClosed: Subject<string> = new Subject();
   public onUserJoinedRoom: Subject<User> = new Subject();
   public onMessage: Subject<Message> = new Subject();
+  public onPublicRoomClosed: Subject<string> = new Subject();
+  public onPublicRoomUpdated: Subject<Room> = new Subject();
 
   constructor() {
     if (HOST) this.socketHost = HOST;
@@ -176,6 +201,7 @@ export class SocketService {
       config: roomConfig,
       appName: this.appName,
       admin: this.user.id,
+      size: 1
     }
     this.socket.emit('create_room', room, (result: SocketCallback) => {
       if (result.success && result.data) {
@@ -202,7 +228,6 @@ export class SocketService {
     const subject: Subject<any> = new Subject();
     this.socket.emit('close_room', roomId, this.user.id, (result: SocketCallback) => {
       if (result.success && result.data) {
-        this.sendMessage(`🌘 Room is closing ...`, roomId);
         subject.next(result);
       } else {
         // emit error (cannot close room, im not an admin of room)
@@ -293,6 +318,15 @@ export class SocketService {
 
     this.socket.on('room_closed', (roomId: string) => {
       this.onRoomClosed.next(roomId);
+    });
+
+    this.socket.on('public_room_closed', (roomId: string) => {
+      console.log('public_room_closed', roomId);
+      this.onPublicRoomClosed.next(roomId);
+    });
+
+    this.socket.on('public_room_updated', (room: Room) => {
+      this.onPublicRoomUpdated.next(room);
     });
 
     // user want to join and send send publicKey

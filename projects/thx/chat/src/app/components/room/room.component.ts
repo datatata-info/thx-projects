@@ -119,8 +119,14 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.onRoomClosed = this.chatSocketService.onRoomClosed.subscribe({
       next: (roomId: string) => {
         if (this.room && this.room.id === roomId) {
-          this.chatSocketService.exitRoom(roomId);
-          console.warn(`ROOM IS CLOSING IN ${this.CLOSE_ROOM_IN / 1000}s`);
+          this.chatSocketService.leaveRoom(roomId);
+          const localMessage: Message = new Message(
+            this.user,
+            `🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`,
+            this.CLOSE_ROOM_IN
+          );
+          this.messages.push(localMessage);
+          // console.warn(`ROOM IS CLOSING IN ${this.CLOSE_ROOM_IN / 1000}s`);
           setTimeout(() => {
             this.router.navigate(['/']);
           }, this.CLOSE_ROOM_IN);
@@ -149,13 +155,28 @@ export class RoomComponent implements OnInit, OnDestroy {
       if (m.id === id) {
         this.messages.splice(i, 1);
         this.playSoundOut();
+        break;
       }
     }
   }
 
   leaveRoom(): void {
     // TODO: even if admin, leave with or without closing (let the room open)
-    this.chatSocketService.exitRoom(this.room.id);
+    this.chatSocketService.sendByAndLeaveRoom(this.room.id);
+    this.router.navigate(['/chat']);
+  }
+
+  closeRoom(): void {
+    // send to room
+    // this.chatSocketService.sendMessage(`🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`, this.room.id);
+    this.chatSocketService.closeRoom(this.room.id).subscribe({
+      next: (result: any) => {
+        if (result.success) {
+          console.log('room close result', result);
+        }
+      },
+      error: (e: any) => console.error(e)
+    });
   }
 
   ngOnDestroy(): void {
@@ -168,10 +189,10 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.onRoomClosed.unsubscribe();
     this.onRoomEstablishedSub.unsubscribe();
     if (this.room) {
-      if (this.isAdmin) {
-        this.chatSocketService.sendMessage(`🌘 Room is closing in ${this.CLOSE_ROOM_IN / 1000}s ...`, this.room.id);
-      }
-      this.chatSocketService.exitRoom(this.room.id);
+      // if (this.isAdmin) {
+      //   this.chatSocketService.sendMessage(`🌘 Room is closing in ${this.CLOSE_ROOM_IN / 1000}s ...`, this.room.id);
+      // }
+      this.chatSocketService.sendByAndLeaveRoom(this.room.id);
     }
     
   }
