@@ -1,30 +1,106 @@
 import { Injectable } from '@angular/core';
+import { User } from '@thx/socket';
+
+export interface ChatOptions {
+  user: User | undefined,
+  subscribedRooms: string[],
+  voiceOver: boolean
+}
+
+const CHAT_OPTIONS_STORAGE_NAME: string = 'thx-chat-options';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
 
-  useVoiceOver: boolean = true;
+  options!: ChatOptions;
+  inRoom!: string;
 
-  constructor() { }
+  constructor() {
+    this.options = this.getOptions();
+  }
 
-  getRoomHash(topic: string): number {
-    let hash = 0, i: number, chr: number;
-    for (i = 0; i < topic.length; i++) {
-      chr   = topic.charCodeAt(i);
-      hash  = ((hash << 5) - hash) + chr;
-      hash |= 0; // Convert to 32bit integer
+  private getOptions(): ChatOptions {
+    const defaultOptions: ChatOptions = {
+      user: undefined,
+      subscribedRooms: [],
+      voiceOver: true
     }
-    return hash;
+    const optionsFromStorage: string | null = localStorage.getItem(CHAT_OPTIONS_STORAGE_NAME)
+    if (optionsFromStorage !== null) {
+      return JSON.parse(optionsFromStorage);
+    }
+    this.updateOptions();
+    // localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(defaultOptions));
+    return defaultOptions;
   }
 
-  topicToUrl(topic: string): string {
-    return topic.replace(/\//g, '--');
+  private updateOptions(): void {
+    if (this.options) {
+      localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
+    }
   }
 
-  urlToTopic(url: string): string {
-    return url.replace(/\-\-/g, '/');
+  setOption(name: string, value: any): void {
+    this.options[name as keyof ChatOptions] = value;
+    this.updateOptions();
+    // localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
   }
+
+  getOption(name: string): any {
+    return this.options[name as keyof ChatOptions];
+  }
+
+  resetOptions(): void {
+    localStorage.removeItem(CHAT_OPTIONS_STORAGE_NAME);
+    window.location.reload();
+  }
+
+  confirmQuestion(question: string): boolean {
+    return confirm(question);
+  }
+
+  subscribeRoom(subscribe: boolean, roomId: string): void {
+    // add to subscribed
+    if (subscribe) {
+      if (!this.options.subscribedRooms.includes(roomId)) this.options.subscribedRooms.push(roomId);
+    // remove from subscribed
+    } else {
+      for (let i = 0; i < this.options.subscribedRooms.length; i++) {
+        const subscribedRoomId = this.options.subscribedRooms[i];
+        if (subscribedRoomId === roomId) {
+          this.options.subscribedRooms.splice(i, 1);
+          break;
+        }
+      }
+    }
+    this.updateOptions();
+  }
+
+  isRoomSubscribedForNotifications(roomId: string): boolean {
+    if (this.options.subscribedRooms.includes(roomId)) return true;
+    return false;
+  }
+
+  // getRoomHash(topic: string): number {
+  //   let hash = 0, i: number, chr: number;
+  //   for (i = 0; i < topic.length; i++) {
+  //     chr   = topic.charCodeAt(i);
+  //     hash  = ((hash << 5) - hash) + chr;
+  //     hash |= 0; // Convert to 32bit integer
+  //   }
+  //   return hash;
+  // }
+// 
+  // topicToUrl(topic: string): string {
+  //   return topic.replace(/\//g, '--');
+  // }
+// 
+  // urlToTopic(url: string): string {
+  //   return url.replace(/\-\-/g, '/');
+  // }
+
+
 
 }

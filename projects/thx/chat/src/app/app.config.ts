@@ -5,6 +5,9 @@ import { provideThxSocket, SocketServerConfig } from '@thx/socket';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
+// Ignoring this import because "node_modules/@angular/common/locales/cs.mjs" was marked as having no side effects [ignored-bare-import]
+// import '@angular/common/locales/cs'; // czech locales
+
 
 const SOCKET_SERVER_CONFIG: SocketServerConfig = {
   host: 'localhost',

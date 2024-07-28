@@ -9,9 +9,11 @@
                 <div class="chat-info">
                     <div>
                         @if(room.config.public) {
-                            <mat-icon class="material-symbols-outlined">public</mat-icon>
+                            <mat-icon [ngStyle]="{opacity: .5}" class="material-symbols-outlined">public</mat-icon>
+                        } @else {
+                            <mat-icon [ngStyle]="{opacity: .5}" class="material-symbols-outlined">lock</mat-icon>
                         }
-                        <mat-icon class="material-symbols-outlined">encrypted</mat-icon>
+                        <mat-icon [ngStyle]="{opacity: .5}" class="material-symbols-outlined">encrypted</mat-icon>
                     </div>
                     <h6>{{room.config.roomName}}</h6>
                 </div>

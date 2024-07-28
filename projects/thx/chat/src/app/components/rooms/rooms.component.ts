@@ -8,9 +8,10 @@ import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } 
 // services
 import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { MessageInputComponent } from '../message-input/message-input.component';
+import { ChatService } from '../../services/chat/chat.service';
 // rxjs
 import { Subscription } from 'rxjs'; 
-import { Room, Message, RoomMessage } from '@thx/socket';
+import { Room, RoomMessage, User } from '@thx/socket';
 
 @Component({
   selector: 'thx-rooms',
@@ -27,7 +28,7 @@ import { Room, Message, RoomMessage } from '@thx/socket';
 })
 export class RoomsComponent implements OnInit, OnDestroy {
 
-  nickname!: string;
+  user!: User;
 
   roomForm: FormGroup<any> = new FormGroup({
     roomName: new FormControl('', Validators.required),
@@ -48,11 +49,11 @@ export class RoomsComponent implements OnInit, OnDestroy {
   private onRoomClosedSub: Subscription = new Subscription();
   private onPublicRoomClosedSub: Subscription = new Subscription();
   private onPublicRoomUpdatedSub: Subscription = new Subscription();
-  private onMessageNotification: Subscription = new Subscription();
 
 
   constructor(
     private chatSocketService: ChatSocketService,
+    private chatService: ChatService,
     private router: Router
   ) {}
 
@@ -68,7 +69,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
       // console.log('set nickname', this.nickname);
       // this.chatSocketService.setUserNickname(this.nickname);
     } else {
-      this.nickname = this.chatSocketService.user.nickname;
+      this.user = this.chatSocketService.user;
     }
     
 
@@ -131,15 +132,6 @@ export class RoomsComponent implements OnInit, OnDestroy {
       },
       error: (e: any) => console.error(e)
     });
-
-    this.onMessageNotification = this.chatSocketService.onMessage.subscribe({
-      next: (roomMessage: RoomMessage) => {
-        // this.messages.push(message);
-        // this.playSoundIn();
-        console.log('message notification', roomMessage);
-      },
-      error: (e: any) => console.error(e)
-    });
   }
 
   ngOnDestroy(): void {
@@ -149,7 +141,12 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onRoomClosedSub.unsubscribe();
     this.onPublicRoomClosedSub.unsubscribe();
     this.onPublicRoomUpdatedSub.unsubscribe();
-    this.onMessageNotification.unsubscribe();
+  }
+
+  resetChatOptions(): void {
+    if (this.chatService.confirmQuestion($localize `Want to reset user settings?`)) {
+      this.chatService.resetOptions();
+    }
   }
 
   createAndJoinRoom(): void {
@@ -172,63 +169,5 @@ export class RoomsComponent implements OnInit, OnDestroy {
       console.error('cannot connect to socket');
     }
   }
-
-  // joinRoom(room: string, validator: string): void {
-  //   // console.log("joinRoom room", room);
-  //   // console.log('joinRoom validator', validator);
-  //   // console.log(this.chatMqttService.subscribedTopics.length);
-// 
-  //   if (!this.chatMqttService.nickname) {
-  //     console.info("set your nickname first");
-  //     return;
-  //   }
-// 
-  //   // TODO: tyto fieldy se musi vyclearovat po tom co uzivatel opusti mistnost, aby se mohl znova prihlasit
-  //   if (!this.chatMqttService.subscribedTopics.length &&
-  //     !this.chatMqttService.enteredChats.length) {
-// 
-  //     // var target = event.target || event.srcElement || event.currentTarget;
-  //     // var topic = target.attributes.id.nodeValue;
-  //     // console.log("room: " + room);
-// 
-  //     this.chatMqttService.joinRoom(room, validator);
-  //     // this.chatStatsService.joinStats(room);
-  //     this.chatMqttService.createUrlSafeHash(room);
-// 
-  //     // show loader
-  //     // this.loaderService.loading.next(true);
-  //     // subscribe signal message
-  //     this.chatMqttService.sigMqttService.signalMessagesSubject.subscribe((msg: any) => {
-  //       if (msg.status === 'signal_successfully_finished') {
-  //         const message: MqttMessage = {
-  //           destinationName: room,
-  //           message: {
-  //             userId: this.chatMqttService.userId,
-  //             name: this.chatMqttService.nickname,
-  //             value: {
-  //               joined: true,
-  //               text: "has joined chat room"
-  //             },
-  //             sentTime: new Date(),
-  //             creator: this.chatMqttService.isCreator
-  //           }
-  //         };
-  //         this.chatMqttService.sendMessageJSON(message);
-  //         // hide loader
-  //         // this.loaderService.loading.next(false);
-  //         // route to chat
-  //         this.router.navigate([`/${this.chatMqttService.getUrlSafeHash()}`]);
-  //       }
-  //     });
-// 
-  //   } else {
-  //     console.info("you are not allowed to join more than one chat rooms");
-  //   }
-  // }
-
-  // getAvailableRooms(): any {
-  //   return this.chatMqttService.availableRooms;
-  // }
-
-
+  ///
 }

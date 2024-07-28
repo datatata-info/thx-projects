@@ -1,0 +1,16 @@
+<div class="emojis-container">
+    <div class="emoji-list">
+        @for(category of emojis | keyvalue: originalOrder; let i = $index; track i) {
+            <h6 class="emoji-category">{{category.key}}</h6>
+            <div class="emojis">
+                @for(subcategory of emojis[category.key] | keyvalue: originalOrder; track subcategory.key) {
+                    <!-- {{subcategory}} -->
+                    @for(emoji of emojis[category.key][subcategory.key]; track emoji) {
+                        <span class="emoji-item">{{emoji}}</span>
+                    }
+                }
+            </div>
+        }
+    </div>
+    <div class="emoji-controls"></div>
+</div>

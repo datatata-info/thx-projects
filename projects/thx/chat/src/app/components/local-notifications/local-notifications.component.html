@@ -1,0 +1,30 @@
+<div class="notifications-container">
+    @for(n of notifications; track n) {
+        <div class="notification">
+            <div class="notification-controls">
+                <mat-icon
+                    color="primary"
+                    class="material-symbols-outlined"
+                    inline="true"
+                >chat</mat-icon>
+                <div class="title">
+                    {{getRoomName(n.roomId)}}
+                </div>
+                <span class="spacer"></span>
+                <div class="close" (click)="close(n)">
+                    <mat-icon
+                        color="primary"
+                        class="material-symbols-outlined"
+                        inline="true"
+                    >close</mat-icon>
+                </div>
+            </div>
+            <thx-message
+                [routerLink]="['/chat', n.roomId]"
+                (click)="deleteNotification(n)"
+                [message]="n.message"
+                (expired)="onExpireMessage(n)"
+            ></thx-message>
+        </div>
+    }
+</div> 

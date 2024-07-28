@@ -51,7 +51,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.message.user && this.message.user.color) {
         this.userColor = this.message.user.color;
       }
-      if (this.chatService.useVoiceOver && this.chatSocketService.user.id !== this.message.user.id) {
+      if (this.chatService.options.voiceOver && this.chatSocketService.user.id !== this.message.user.id) {
         this.voiceOverService.speak(`${this.message.user.nickname}: ${this.message.value}`);
       }
   

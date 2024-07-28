@@ -57,27 +57,30 @@ export class RoomComponent implements OnInit, OnDestroy {
   ){}
 
   ngOnInit(): void {
-    this.voiceOver = this.chatService.useVoiceOver;
+    this.voiceOver = this.chatService.options.voiceOver;
+    // this.messages = []; // TODO: (on router navigate) reset messages (from notification)
     if (this.chatSocketService.user) this.user = this.chatSocketService.user;
     // TODO: REFACTOR
     this.routeSub = this.route.params.subscribe({
       next: (params: any) => {
-        console.log('route params', params);
+        // console.log('route params', params);
         if (params.roomId) {
           const roomId = params.roomId;
+          this.chatService.inRoom = roomId;
+          this.notifications = this.chatService.isRoomSubscribedForNotifications(roomId);
           this.room = this.chatSocketService.getRoom(roomId);
-          console.log('room', this.room);
+          // console.log('room', this.room);
           this.roomExistSub = this.chatSocketService.roomExist(roomId).subscribe({
             next: (roomExist: boolean) => {
-              console.log('roomExist?', roomExist);
+              // console.log('roomExist?', roomExist);
               if (roomExist) {
                 if (this.room && this.user) this.roomEstablished.next(true);
                 // room exist and im not joined
-                console.log('isRoomJoined?', this.chatSocketService.isRoomJoined(roomId));
+                // console.log('isRoomJoined?', this.chatSocketService.isRoomJoined(roomId));
                 if (!this.chatSocketService.isRoomJoined(roomId)) {
-                  console.log('im not joined, should join');
+                  // console.log('im not joined, should join');
                   if (!this.chatSocketService.user) {
-                    console.log('NO USER? :(');
+                    // console.log('NO USER? :(');
                     // const nickname = this.animalService.getRandomAnimal();
                     // this.chatSocketService.setUserNickname(nickname);
                     // this.user = this.chatSocketService.user;
@@ -128,7 +131,7 @@ export class RoomComponent implements OnInit, OnDestroy {
           this.chatSocketService.leaveRoom(roomId);
           const localMessage: Message = new Message(
             this.user,
-            `🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`,
+            $localize `🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`,
             this.CLOSE_ROOM_IN
           );
           this.messages.push(localMessage);
@@ -168,21 +171,31 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   leaveRoom(): void {
     // TODO: even if admin, leave with or without closing (let the room open)
-    if (!this.notifications) this.chatSocketService.sendByAndLeaveRoom(this.room.id);
-    this.router.navigate(['/chat']);
+    if (!this.notifications) {
+      if (this.chatService.confirmQuestion($localize `Want to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`)) {
+        this.chatSocketService.sendByAndLeaveRoom(this.room.id);
+        this.router.navigate(['/chat']);
+      }
+    } else {
+      this.router.navigate(['/chat']);
+    }
+    
   }
 
   closeRoom(): void {
     // send to room
     // this.chatSocketService.sendMessage(`🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`, this.room.id);
-    this.chatSocketService.closeRoom(this.room.id).subscribe({
-      next: (result: any) => {
-        if (result.success) {
-          console.log('room close result', result);
-        }
-      },
-      error: (e: any) => console.error(e)
-    });
+    if (this.chatService.confirmQuestion($localize `Would you like to close this chat? Other users will receive a message and be disconnected from the chat in a moment.`)) {
+      this.chatSocketService.closeRoom(this.room.id).subscribe({
+        next: (result: any) => {
+          if (result.success) {
+            console.log('room close result', result);
+          }
+        },
+        error: (e: any) => console.error(e)
+      });
+    }
+    
   }
 
   copyChatLinkToClipboard(): void {
@@ -190,7 +203,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(location.href)
     .then(() => {
       // Alert the copied text
-      alert('Link successfully copied to clipboard.');
+      alert($localize `Link successfully copied to clipboard.`);
     })
     .catch((e: any) => {
       alert(e);
@@ -206,6 +219,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.onMessageSub.unsubscribe();
     this.onRoomClosed.unsubscribe();
     this.onRoomEstablishedSub.unsubscribe();
+    this.chatService.inRoom = '';
     if (this.room) {
       // if (this.isAdmin) {
       //   this.chatSocketService.sendMessage(`🌘 Room is closing in ${this.CLOSE_ROOM_IN / 1000}s ...`, this.room.id);
@@ -217,11 +231,12 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   toggleVoiceOver(): void {
     this.voiceOver = !this.voiceOver;
-    this.chatService.useVoiceOver = this.voiceOver;
+    this.chatService.options.voiceOver = this.voiceOver;
   }
 
   toggleNotifications(): void {
     this.notifications = !this.notifications;
+    this.chatService.subscribeRoom(this.notifications, this.room.id);
   }
 
   pushMessage(message: Message): void {

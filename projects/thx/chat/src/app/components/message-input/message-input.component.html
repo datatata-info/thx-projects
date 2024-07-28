@@ -1,6 +1,9 @@
+@if (showEmoji) {
+    <thx-emoji (onClose)="hideEmoji()" (selected)="onSelectEmoji($event)"></thx-emoji>
+}
 <form [formGroup]="sendMessageForm" (ngSubmit)="sendMessage()" [ngStyle]="{color: color ? color : 'unset'}">
     <input [ngStyle]="{borderColor: color ? color : 'unset', color: color ? color : 'unset'}" autocomplete="off" type="text" name="message" id="message" formControlName="message">
-    <mat-icon (click)="showEmoji()" class="emoji material-symbols-outlined" aria-hidden="false" fontIcon="mood" inline="true"></mat-icon>
+    <mat-icon (click)="toggleEmoji()" class="emoji material-symbols-outlined" aria-hidden="false" fontIcon="mood" inline="true"></mat-icon>
     <button class="large" mat-icon-button [disabled]="!sendMessageForm.value.message" type="submit">
         <mat-icon class="material-symbols-outlined" aria-hidden="false" aria-label="Send message" fontIcon="send" inline="true"></mat-icon>
     </button>
