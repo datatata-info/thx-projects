@@ -21,19 +21,13 @@ export class ChatSocketService extends SocketService {
     this.connect();
     // console.log('...subscribe cert');
     this.onCertGenerated.subscribe({
-      next: (done: boolean) => console.log('cert generated', done),
+      next: (done: boolean) => {
+        if (done) console.info('cert ready...', done)
+      },
       complete: () => this.certGenSub.unsubscribe(),
       error: (e: any) => console.error(e)
     });
   }
-
-  // setUserNickname(nickname: string): void {
-  //   this.user = {
-  //     id: uuidv4(),
-  //     nickname: nickname
-  //   }
-  //   this.login();
-  // }
 
   join(room: Room): void {
     this.rooms[room.id] = room;

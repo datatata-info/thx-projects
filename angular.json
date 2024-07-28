@@ -5,6 +5,15 @@
   "projects": {
     "@thx/chat": {
       "projectType": "application",
+      "i18n": {
+        "sourceLocale": "en-US",
+        "locales": {
+          "cs": {
+            "baseHref": "cs",
+            "translation": "messages.cs.xlf"
+          }
+        }
+      },
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
@@ -17,6 +26,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
+            "localize": true,
             "outputPath": "dist/thx/chat",
             "index": "projects/thx/chat/src/index.html",
             "browser": "projects/thx/chat/src/main.ts",
@@ -52,7 +62,8 @@
                   "maximumError": "4kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "serviceWorker": "projects/thx/chat/ngsw-config.json"
             },
             "development": {
               "optimization": false,

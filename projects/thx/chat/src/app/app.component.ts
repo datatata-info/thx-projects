@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 // services
 import { ChatSocketService } from './services/chat-socket/chat-socket.service';
 import { EmojiService } from './services/emoji/emoji.service';
@@ -31,11 +32,13 @@ export class AppComponent implements OnInit, OnDestroy {
     private chatSocketService: ChatSocketService,
     private emojiService: EmojiService,
     private colorService: ColorService,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private router: Router
   ){}
 
   ngOnInit(): void {
-    if (!this.chatService.getOption('user')) {
+    const chatOptions = this.chatService.options;
+    if (!chatOptions.user) {
       this.user = new User(
         this.emojiService.getRandomEmoji('Animals & Nature'),
         this.colorService.generateHslaColors(70, 40)[0]
@@ -50,6 +53,11 @@ export class AppComponent implements OnInit, OnDestroy {
     }
     // login user
     this.chatSocketService.login(this.user);
+
+    // accept terms
+    if (!chatOptions.termsApproved) {
+      this.router.navigate(['/terms']); // no way ;)
+    }
 
     // notifications
     this.onMessageNotification = this.chatSocketService.onMessage.subscribe({

@@ -15,6 +15,8 @@ export class VoiceOverService {
   // TODO: choose language EN
 
   constructor() {
+    const userLang = navigator.language;
+    console.log('userLang', userLang);
     // console.log('voices', this.voices);
     if (!this.voices.length) {
       this.synth.addEventListener('voiceschanged', () => {
@@ -28,8 +30,6 @@ export class VoiceOverService {
 
   private chooseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
     // console.log('voices', this.voices);
-    const userLang = navigator.language;
-    console.log('userLang', userLang);
     for (const voice of voices) {
       // if (voice.default) console.log('default voice', voice);
       if (

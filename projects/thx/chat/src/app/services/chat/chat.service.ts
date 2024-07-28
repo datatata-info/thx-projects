@@ -4,7 +4,8 @@ import { User } from '@thx/socket';
 export interface ChatOptions {
   user: User | undefined,
   subscribedRooms: string[],
-  voiceOver: boolean
+  voiceOver: boolean,
+  termsApproved: boolean
 }
 
 const CHAT_OPTIONS_STORAGE_NAME: string = 'thx-chat-options';
@@ -25,7 +26,8 @@ export class ChatService {
     const defaultOptions: ChatOptions = {
       user: undefined,
       subscribedRooms: [],
-      voiceOver: true
+      voiceOver: true,
+      termsApproved: false
     }
     const optionsFromStorage: string | null = localStorage.getItem(CHAT_OPTIONS_STORAGE_NAME)
     if (optionsFromStorage !== null) {

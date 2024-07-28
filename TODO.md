@@ -1,0 +1,2 @@
+- localisation, see: https://lokalise.com/blog/angular-i18n/
+- pwa (setup + install logic)

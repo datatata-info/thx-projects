@@ -17,7 +17,7 @@ export interface SocketServerConfig {
 }
 
 export function provideThxSocket(config: SocketServerConfig): EnvironmentProviders {
-  console.log('provideThxSocket', config);
+  // console.log('provideThxSocket', config);
   HOST = config.host;
   PORT = config.port;
   USE_ENCRYPTION = config.useEncryption;
@@ -159,7 +159,7 @@ export class SocketService {
   private generateKeyPair(): void {
     forge.pki.rsa.generateKeyPair({ bits: 2048, e: 0x10001 }, (error: any, keyPair: forge.pki.rsa.KeyPair) => {
       if (error) console.error(error);
-      console.log('keyPair generated');
+      // console.log('keyPair generated');
       this.keyPair = keyPair;
       const localStorageCert: LocalStorageCert = {
         created: Date.now(),
@@ -288,7 +288,7 @@ export class SocketService {
 
   private listenSocket(): void {
     this.socket.on('connect', () => {
-      console.log('socket connected to server', this.socket.connected);
+      // console.log('socket connected to server', this.socket.connected);
       this.connected = true;
       this.getAvailableRooms();
     });
@@ -314,7 +314,7 @@ export class SocketService {
 
     this.socket.on('user_joined_room', (user: User, roomId: string) => {
       this.onUserJoinedRoom.next(user);
-      console.log('user_joined_room', user.id);
+      // console.log('user_joined_room', user.id);
     });
 
     this.socket.on('user_leaved_room', (userId: string) => {
@@ -326,7 +326,7 @@ export class SocketService {
     });
 
     this.socket.on('public_room_closed', (roomId: string) => {
-      console.log('public_room_closed', roomId);
+      // console.log('public_room_closed', roomId);
       this.onPublicRoomClosed.next(roomId);
     });
 
