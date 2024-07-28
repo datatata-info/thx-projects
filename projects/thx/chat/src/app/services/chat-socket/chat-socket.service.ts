@@ -24,7 +24,7 @@ export class ChatSocketService extends SocketService {
       next: (done: boolean) => console.log('cert generated', done),
       complete: () => this.certGenSub.unsubscribe(),
       error: (e: any) => console.error(e)
-    })
+    });
   }
 
   // setUserNickname(nickname: string): void {

@@ -10,7 +10,7 @@ import { ChatSocketService } from '../../services/chat-socket/chat-socket.servic
 import { MessageInputComponent } from '../message-input/message-input.component';
 // rxjs
 import { Subscription } from 'rxjs'; 
-import { Room } from '@thx/socket';
+import { Room, Message, RoomMessage } from '@thx/socket';
 
 @Component({
   selector: 'thx-rooms',
@@ -48,6 +48,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
   private onRoomClosedSub: Subscription = new Subscription();
   private onPublicRoomClosedSub: Subscription = new Subscription();
   private onPublicRoomUpdatedSub: Subscription = new Subscription();
+  private onMessageNotification: Subscription = new Subscription();
 
 
   constructor(
@@ -129,7 +130,16 @@ export class RoomsComponent implements OnInit, OnDestroy {
         }
       },
       error: (e: any) => console.error(e)
-    })
+    });
+
+    this.onMessageNotification = this.chatSocketService.onMessage.subscribe({
+      next: (roomMessage: RoomMessage) => {
+        // this.messages.push(message);
+        // this.playSoundIn();
+        console.log('message notification', roomMessage);
+      },
+      error: (e: any) => console.error(e)
+    });
   }
 
   ngOnDestroy(): void {
@@ -139,6 +149,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onRoomClosedSub.unsubscribe();
     this.onPublicRoomClosedSub.unsubscribe();
     this.onPublicRoomUpdatedSub.unsubscribe();
+    this.onMessageNotification.unsubscribe();
   }
 
   createAndJoinRoom(): void {

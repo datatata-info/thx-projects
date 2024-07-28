@@ -9,10 +9,10 @@ import { ChatStatsComponent } from '../chat-stats/chat-stats.component';
 // services
 import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { AudioService } from '../../services/audio/audio.service';
-import { AnimalsService } from '../../services/animals/animals.service';
+import { ChatService } from '../../services/chat/chat.service';
 // rxjs
 import { Subscription, Subject } from 'rxjs';
-import { Message, Room, User } from '@thx/socket';
+import { Message, Room, RoomMessage, User } from '@thx/socket';
 
 @Component({
   selector: 'thx-room',
@@ -44,18 +44,22 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   messages: Message[] = [];
 
-  private checkingMessages: boolean = true;
+  voiceOver: boolean = true;
+  notifications: boolean = false;
+
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private chatSocketService: ChatSocketService,
     private audioService: AudioService,
-    private animalService: AnimalsService
+    private chatService: ChatService
   ){}
 
   ngOnInit(): void {
+    this.voiceOver = this.chatService.useVoiceOver;
     if (this.chatSocketService.user) this.user = this.chatSocketService.user;
+    // TODO: REFACTOR
     this.routeSub = this.route.params.subscribe({
       next: (params: any) => {
         console.log('route params', params);
@@ -109,9 +113,11 @@ export class RoomComponent implements OnInit, OnDestroy {
     });
 
     this.onMessageSub = this.chatSocketService.onMessage.subscribe({
-      next: (message: Message) => {
-        this.messages.push(message);
-        this.playSoundIn();
+      next: (result: RoomMessage) => {
+        if (result.roomId === this.room.id) { // show only relevant messages for room (exclude notifications from other rooms)
+          this.messages.push(result.message);
+          this.playSoundIn();
+        }
       },
       error: (e: any) => console.error(e)
     });
@@ -162,7 +168,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   leaveRoom(): void {
     // TODO: even if admin, leave with or without closing (let the room open)
-    this.chatSocketService.sendByAndLeaveRoom(this.room.id);
+    if (!this.notifications) this.chatSocketService.sendByAndLeaveRoom(this.room.id);
     this.router.navigate(['/chat']);
   }
 
@@ -179,8 +185,20 @@ export class RoomComponent implements OnInit, OnDestroy {
     });
   }
 
+  copyChatLinkToClipboard(): void {
+    // Copy the text inside the text field
+    navigator.clipboard.writeText(location.href)
+    .then(() => {
+      // Alert the copied text
+      alert('Link successfully copied to clipboard.');
+    })
+    .catch((e: any) => {
+      alert(e);
+    })
+    
+  }
+
   ngOnDestroy(): void {
-    this.checkingMessages = false; // stop requestAnimationFrame
     this.messages.length = 0; // remove all messages
     this.roomExistSub.unsubscribe();
     this.routeSub.unsubscribe();
@@ -192,9 +210,18 @@ export class RoomComponent implements OnInit, OnDestroy {
       // if (this.isAdmin) {
       //   this.chatSocketService.sendMessage(`🌘 Room is closing in ${this.CLOSE_ROOM_IN / 1000}s ...`, this.room.id);
       // }
-      this.chatSocketService.sendByAndLeaveRoom(this.room.id);
+      if (!this.notifications) this.chatSocketService.sendByAndLeaveRoom(this.room.id);
     }
     
+  }
+
+  toggleVoiceOver(): void {
+    this.voiceOver = !this.voiceOver;
+    this.chatService.useVoiceOver = this.voiceOver;
+  }
+
+  toggleNotifications(): void {
+    this.notifications = !this.notifications;
   }
 
   pushMessage(message: Message): void {

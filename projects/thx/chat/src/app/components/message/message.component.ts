@@ -46,7 +46,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   ){}
 
   ngOnInit(): void {
-    console.log('message', this.message);
+    // console.log('message', this.message);
     if (this.message) {
       if (this.message.user && this.message.user.color) {
         this.userColor = this.message.user.color;
@@ -64,7 +64,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
           // console.log('messige countdown', data.countable);
         },
         complete: () => {
-          console.log('message timer done');
+          // console.log('message timer done');
           this.expired.next(this.message.id);
           this.expiryTimerSub.unsubscribe();
         },

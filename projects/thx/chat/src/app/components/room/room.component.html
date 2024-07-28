@@ -50,14 +50,24 @@
     </div>
 
     <div class="chat-options">
-        <button mat-icon-button class="large">
-            <mat-icon color="primary" class="material-symbols-outlined" inline="true">record_voice_over</mat-icon>
+        <button mat-icon-button class="large" (click)="toggleVoiceOver()">
+            <mat-icon
+                [ngStyle]="{opacity: voiceOver ? 1.0 : 0.5}"
+                color="primary"
+                class="material-symbols-outlined"
+                inline="true"
+            >record_voice_over</mat-icon>
         </button>
-        <button mat-icon-button class="large">
-            <mat-icon color="primary" class="material-symbols-outlined" inline="true">notifications</mat-icon>
+        <button mat-icon-button class="large" (click)="toggleNotifications()">
+            <mat-icon
+                [ngStyle]="{opacity: notifications ? 1.0 : 0.5}"
+                color="primary"
+                class="material-symbols-outlined"
+                inline="true"
+            >notifications</mat-icon>
         </button>
         <span class="spacer"></span>
-        <button mat-icon-button class="large">
+        <button mat-icon-button class="large" (click)="copyChatLinkToClipboard()">
             <mat-icon color="primary" class="material-symbols-outlined" inline="true">ios_share</mat-icon>
         </button>
     </div>

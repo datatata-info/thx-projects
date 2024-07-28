@@ -80,6 +80,11 @@ export class Message {
   }
 }
 
+export interface RoomMessage {
+  roomId: string,
+  message: Message
+}
+
 interface SocketCallback {
   success: boolean,
   message: string,
@@ -116,7 +121,7 @@ export class SocketService {
   public onAvailableRooms: Subject<Room[]> = new Subject();
   public onRoomClosed: Subject<string> = new Subject();
   public onUserJoinedRoom: Subject<User> = new Subject();
-  public onMessage: Subject<Message> = new Subject();
+  public onMessage: Subject<RoomMessage> = new Subject();
   public onPublicRoomClosed: Subject<string> = new Subject();
   public onPublicRoomUpdated: Subject<Room> = new Subject();
 
@@ -348,7 +353,7 @@ export class SocketService {
       this.sendMessage('Joined chat.', roomId);
     });
 
-    this.socket.on('message', (message: Message) => {
+    this.socket.on('message', (message: Message, roomId: string) => {
       if (this.useEncryption) {
          // decrypt message
         const messageObj: any = JSON.parse(message.value);
@@ -358,10 +363,10 @@ export class SocketService {
           const messageValue = this.keyPair.privateKey.decrypt(value, 'RSA-OAEP');
           // console.log('decrypted message', messageValue);
           message.value = decodeURIComponent(messageValue);
-          this.onMessage.next(message);
+          this.onMessage.next({message: message, roomId: roomId});
         }
       } else {
-        this.onMessage.next(message);
+        this.onMessage.next({message: message, roomId: roomId});
       } 
      
 
