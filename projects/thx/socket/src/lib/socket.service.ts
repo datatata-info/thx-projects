@@ -114,7 +114,7 @@ export class SocketService {
 
   public appName: string = '';
   public user!: User;
-  public connected: boolean = false;
+  public connected: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   public onCertGenerated: BehaviorSubject<boolean> = new BehaviorSubject(false);
   public onNewRoom: Subject<Room> = new Subject();
@@ -289,12 +289,13 @@ export class SocketService {
   private listenSocket(): void {
     this.socket.on('connect', () => {
       // console.log('socket connected to server', this.socket.connected);
-      this.connected = true;
+      this.connected.next(true);
       this.getAvailableRooms();
     });
 
     this.socket.on('disconnect', () => {
       console.log('socket disconnected');
+      this.connected.next(false);
     });
 
     this.socket.on('reconnect', () => {
