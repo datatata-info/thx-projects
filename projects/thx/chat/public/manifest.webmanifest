@@ -1,8 +1,8 @@
 {
   "name": "@thx/chat",
   "short_name": "@thx/chat",
-  "theme_color": "#1976d2",
-  "background_color": "#fafafa",
+  "theme_color": "#00b8d4",
+  "background_color": "#191c1c",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
