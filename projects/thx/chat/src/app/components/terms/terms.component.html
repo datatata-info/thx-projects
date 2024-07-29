@@ -1,7 +1,88 @@
-<p>terms works!</p>
+<h2>
+    <button class="large" mat-icon-button (click)="goBack()">
+        <mat-icon color="primary" class="material-symbols-outlined" inline="true">arrow_back</mat-icon>
+    </button>
+    <span i18n>thx/chat Terms of Service and Privacy Policy</span>
+</h2>
 
 <div class="terms-controls">
     <button mat-flat-button color="accent" (click)="rejectTerms()">Reject</button>
     <span class="spacer"></span>
     <button mat-flat-button (click)="acceptTerms()">Accept</button>
 </div>
+
+<p i18n>Effective Date: July 29, 2024</p>
+
+<p>Welcome to "thx/chat", the end-to-end encrypted, semi-anonymous speed chat app. By using our services, you agree to comply with and be bound by the following terms and conditions. Please review them carefully.</p>
+
+<p><button mat-stroked-button [routerLink]="['/about']">About</button></p>
+
+<h3>Terms of Service</h3>
+<h6>1. Acceptance of Terms</h6>
+
+<p>By using "thx/chat", you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the app.</p>
+
+<h6>2. Description of Service</h6>
+
+<p>"thx/chat" provides a secure, end-to-end encrypted chat platform that does not store or collect user data. The app is open-source and available on GitHub.</p>
+
+<h6>3. User Conduct</h6>
+
+<p>You agree to use "thx/chat" for lawful purposes only. You are responsible for all content you send and receive through the app.</p>
+
+<h6>4. Privacy and Data Security</h6>
+
+<p>"thx/chat" is designed to prioritize user privacy and data security. We do not store or collect any user data. All messages are deleted from the unit's memory after a short pre-defined period of time (1 minute).</p>
+
+<h6>5. Intellectual Property</h6>
+
+<p>The source code of "thx/chat" is open-source and available under the MIT License. You may use, modify, and distribute the source code in accordance with the terms of this license.</p>
+
+<h6>6. Limitation of Liability</h6>
+
+<p>"thx/chat" is provided on an "as is" and "as available" basis. We do not guarantee that the app will be uninterrupted or error-free. In no event will we be liable for any damages arising from the use or inability to use the app.</p>
+
+<h6>7. Modifications to Terms</h6>
+
+<p>We may modify these Terms at any time. We will notify users of any significant changes through the app or via our website. Your continued use of the app after such changes signifies your acceptance of the new Terms.</p>
+
+<h6>8. Termination</h6>
+
+<p>We reserve the right to terminate or suspend your access to "thx/chat" at any time, with or without cause or notice.</p>
+
+<h3>Privacy Policy</h3>
+<h6>1. Introduction</h6>
+
+<p>Your privacy is critically important to us. This Privacy Policy explains how "thx/chat" handles your personal information.</p>
+
+<h6>2. Data Collection and Use</h6>
+
+<p>"thx/chat" does not collect, store, or process any personal data. We operate on a non-extractive model where no user data is collected or stored.</p>
+
+<h6>3. Message Deletion</h6>
+
+<p>By default, "thx/chat" deletes any message from the unit's memory after a short pre-defined period of time (1 minute). No messages are stored on the server side.</p>
+
+<h6>4. Anonymity</h6>
+
+<p>"thx/chat" uses randomly generated user profiles. However, it is not an anonymization tool and does not hide communication patterns over the network.</p>
+
+<h6>5. Open Source and User Autonomy</h6>
+
+<p>"thx/chat" is open-source and part of the fediverse concept, which aims to avoid monopolies on services and provide autonomy to small "nodes" in a larger network. The implementation of "fedi" protocols is part of the next development phase of "thx/chat".</p>
+
+<h6>6. Research and Development</h6>
+
+<p>As part of ongoing research, some data may be processed and analyzed in runtime on the client side. This data and its analysis are end-to-end encrypted, stored only in memory, and shared only with users connected to the same chat. This feature aims to help users understand digital communication and provide insights for other contexts.</p>
+
+<h6>7. Changes to Privacy Policy</h6>
+
+<p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on our website. You are advised to review this Privacy Policy periodically for any changes.</p>
+
+<h6>8. Contact Us</h6>
+
+<p>If you have any questions about these Terms or Privacy Policy, please contact us at [xvjavurek💫vutbr💥cz].</p>
+
+
+
+<thx-research-info></thx-research-info>
