@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="7016790272435410171" datatype="html">
+        <source>Enter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/hello/hello.component.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3583406655409155887" datatype="html">
+        <source>🌘 Chat closes in <x id="PH" equiv-text="this.CLOSE_ROOM_IN / 1000"/> seconds.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/room/room.component.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4698058205009045484" datatype="html">
+        <source>Want to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/room/room.component.ts</context>
+          <context context-type="linenumber">175</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6454926792960217153" datatype="html">
+        <source>Would you like to close this chat? Other users will receive a message and be disconnected from the chat in a moment.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/room/room.component.ts</context>
+          <context context-type="linenumber">188</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6966196917919876705" datatype="html">
+        <source>Link successfully copied to clipboard.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/room/room.component.ts</context>
+          <context context-type="linenumber">206</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7874641980921552433" datatype="html">
+        <source>Welcome <x id="INTERPOLATION" equiv-text="{{user.nickname}}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/rooms/rooms.component.html</context>
+          <context context-type="linenumber">2,3</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2694569043505267746" datatype="html">
+        <source>Join Public Chats</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/rooms/rooms.component.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2417314978621991581" datatype="html">
+        <source>Start New Chat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/rooms/rooms.component.html</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8928816882866356838" datatype="html">
+        <source>Public</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/rooms/rooms.component.html</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4837479623252839420" datatype="html">
+        <source>Enter Chat <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{roomForm.value.roomName}}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/rooms/rooms.component.html</context>
+          <context context-type="linenumber">40,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6308911698117926419" datatype="html">
+        <source>Want to reset user settings?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">projects/thx/chat/src/app/components/rooms/rooms.component.ts</context>
+          <context context-type="linenumber">147</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

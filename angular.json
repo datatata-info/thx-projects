@@ -8,9 +8,9 @@
       "i18n": {
         "sourceLocale": "en-US",
         "locales": {
-          "cs": {
-            "baseHref": "cs",
-            "translation": "messages.cs.xlf"
+          "cs-CZ": {
+            "baseHref": "cs-CZ",
+            "translation": "messages.cs-CZ.xlf"
           }
         }
       },
@@ -54,7 +54,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumError": "1.5MB"
                 },
                 {
                   "type": "anyComponentStyle",
