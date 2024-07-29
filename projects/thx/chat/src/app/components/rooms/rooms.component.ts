@@ -10,7 +10,7 @@ import { ChatSocketService } from '../../services/chat-socket/chat-socket.servic
 import { MessageInputComponent } from '../message-input/message-input.component';
 import { ChatService } from '../../services/chat/chat.service';
 // rxjs
-import { Subscription } from 'rxjs'; 
+import { Subscription, Observable, startWith, map } from 'rxjs'; 
 import { Room, RoomMessage, User } from '@thx/socket';
 
 @Component({
@@ -37,10 +37,14 @@ export class RoomsComponent implements OnInit, OnDestroy {
     public: new FormControl(true)
   });
 
+  searchRoomControl: FormControl = new FormControl('');
+
   subscribedTopics: any;
   safeUrl: any;
 
   availableRooms: Room[] = [];
+  filteredRooms!: Observable<Room[]>;
+  socketConnected: boolean = false;
 
   // subscribtions
   private createRoomSub: Subscription = new Subscription();
@@ -49,6 +53,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
   private onRoomClosedSub: Subscription = new Subscription();
   private onPublicRoomClosedSub: Subscription = new Subscription();
   private onPublicRoomUpdatedSub: Subscription = new Subscription();
+  private onSocketConnectionChange: Subscription = new Subscription();
 
 
   constructor(
@@ -61,6 +66,15 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('-----rooms init-----');
+    // this.socketConnected = this.chatSocketService.connected;
+    this.onSocketConnectionChange = this.chatSocketService.connected.subscribe({
+      next: (connected: boolean) => this.socketConnected = connected
+    });
+    console.log('chatSocketService.connected', this.chatSocketService.connected);
+    this.filteredRooms = this.searchRoomControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filter(value || '')),
+    );
     this.chatSocketService.getAvailableRooms();
     if (!this.chatSocketService.user) {
       console.warn('NO USER? :(');
@@ -108,6 +122,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
     this.onPublicRoomClosedSub = this.chatSocketService.onPublicRoomClosed.subscribe({
       next: (roomId: string) => {
+        if (this.chatService.isMyRoom(roomId)) this.chatService.removeMyRoom(roomId);
         for (let i = 0; i < this.availableRooms.length; i++) {
           const room = this.availableRooms[i];
           if (room.id === roomId) {
@@ -141,6 +156,26 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onRoomClosedSub.unsubscribe();
     this.onPublicRoomClosedSub.unsubscribe();
     this.onPublicRoomUpdatedSub.unsubscribe();
+    this.onSocketConnectionChange.unsubscribe();
+  }
+
+  private _filter(value: string): Room[] {
+    // console.log('filter value', value);
+    if (typeof value === 'string') {
+      const filterValue = value.toLowerCase();
+      return this.availableRooms.filter(room => room.config.roomName.toLowerCase().includes(filterValue));
+    }
+    return [];
+  }
+
+  displaySearchRoomFn(room: Room): string {
+    return room && room.config.roomName ? room.config.roomName : '';
+  }
+
+  onRoomSelect(room: Room): void {
+    if (room && room.id) {
+      this.router.navigate(['/chat', room.id]);
+    }
   }
 
   createAndJoinRoom(): void {
@@ -148,10 +183,11 @@ export class RoomsComponent implements OnInit, OnDestroy {
       console.error('check form');
       return;
     }
-    if (this.chatSocketService.connected && this.chatSocketService.user) {
+    if (this.socketConnected && this.chatSocketService.user) {
       this.createRoomSub = this.chatSocketService.createRoom(this.roomForm.value).subscribe({
         next: (room: Room) => {
           console.log('new room created by me', room);
+          this.chatService.addMyRoom(room.id);
           this.chatSocketService.join(room);
           this.createRoomSub.unsubscribe();
           this.roomForm.reset();
@@ -162,6 +198,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
     } else {
       console.error('cannot connect to socket');
     }
+  }
+
+  log(key: any, value: any): void {
+    console.log(key, value);
   }
   ///
 }

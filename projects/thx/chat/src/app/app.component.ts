@@ -72,9 +72,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.chatSocketService.login(this.user);
 
     // accept terms
-    if (!chatOptions.termsApproved) {
-      this.router.navigate(['/terms']); // no way ;)
-    }
+    // if (!chatOptions.termsApproved) {
+    //   this.router.navigate(['/terms']); // no way ;)
+    // }
 
     // notifications
     this.onMessageNotification = this.chatSocketService.onMessage.subscribe({

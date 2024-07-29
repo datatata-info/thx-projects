@@ -26,6 +26,7 @@ export class ChatService {
 
   options!: ChatOptions;
   inRoom!: string;
+  private myRooms: string[] = [];
 
   constructor() {
     this.options = this.getOptions();
@@ -60,6 +61,27 @@ export class ChatService {
   private updateOptions(): void {
     if (this.options) {
       localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
+    }
+  }
+
+  // TODO
+  // this should be moved to @thx/socket, as well as a logic with available public rooms
+  addMyRoom(roomId: string): void {
+    this.myRooms.push(roomId);
+  }
+
+  isMyRoom(roomId: string): boolean {
+    if (this.myRooms.includes(roomId)) return true;
+    return false;
+  }
+
+  removeMyRoom(roomId: string): void {
+    for (let i = 0; i < this.myRooms.length; i++) {
+      const id = this.myRooms[i];
+      if (id === roomId) {
+        this.myRooms.splice(i, 1);
+        break;
+      }
     }
   }
 
@@ -103,25 +125,5 @@ export class ChatService {
     if (this.options.subscribedRooms.includes(roomId)) return true;
     return false;
   }
-
-  // getRoomHash(topic: string): number {
-  //   let hash = 0, i: number, chr: number;
-  //   for (i = 0; i < topic.length; i++) {
-  //     chr   = topic.charCodeAt(i);
-  //     hash  = ((hash << 5) - hash) + chr;
-  //     hash |= 0; // Convert to 32bit integer
-  //   }
-  //   return hash;
-  // }
-// 
-  // topicToUrl(topic: string): string {
-  //   return topic.replace(/\//g, '--');
-  // }
-// 
-  // urlToTopic(url: string): string {
-  //   return url.replace(/\-\-/g, '/');
-  // }
-
-
 
 }

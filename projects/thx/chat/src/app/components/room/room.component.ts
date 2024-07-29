@@ -80,12 +80,12 @@ export class RoomComponent implements OnInit, OnDestroy {
                 // console.log('isRoomJoined?', this.chatSocketService.isRoomJoined(roomId));
                 if (!this.chatSocketService.isRoomJoined(roomId)) {
                   // console.log('im not joined, should join');
-                  if (!this.chatSocketService.user) {
-                    // console.log('NO USER? :(');
-                    // const nickname = this.animalService.getRandomAnimal();
-                    // this.chatSocketService.setUserNickname(nickname);
-                    // this.user = this.chatSocketService.user;
-                  }
+                  // if (!this.chatSocketService.user) {
+                  //   // console.log('NO USER? :(');
+                  //   // const nickname = this.animalService.getRandomAnimal();
+                  //   // this.chatSocketService.setUserNickname(nickname);
+                  //   // this.user = this.chatSocketService.user;
+                  // }
                   
                   // maybe wait a bit or setUserNickname with callback
                   this.joinRoomSub = this.chatSocketService.joinRoom(roomId).subscribe({
@@ -130,6 +130,8 @@ export class RoomComponent implements OnInit, OnDestroy {
       next: (roomId: string) => {
         if (this.room && this.room.id === roomId) {
           this.chatSocketService.leaveRoom(roomId);
+          // remove from my rooms
+          if (this.chatService.isMyRoom(roomId)) this.chatService.removeMyRoom(roomId);
           const localMessage: Message = new Message(
             this.user,
             $localize `🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`,
@@ -185,7 +187,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   leaveRoom(): void {
     // TODO: even if admin, leave with or without closing (let the room open)
     if (!this.notifications) {
-      if (this.chatService.confirmQuestion($localize `Want to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`)) {
+      if (this.chatService.confirmQuestion($localize `You are going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`)) {
         this.chatSocketService.sendByAndLeaveRoom(this.room.id);
         this.router.navigate(['/chat']);
       }

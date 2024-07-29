@@ -1,1 +1,32 @@
-<p>about works!</p>
+<h2>
+    <button class="large" mat-icon-button (click)="goBack()">
+        <mat-icon color="primary" class="material-symbols-outlined" inline="true">arrow_back</mat-icon>
+    </button>
+    <span i18n>About</span>
+</h2>
+<p><strong>THX/CHAT is the end-to-end encrypted, semi-anonymous speed chat app.<sup>[<a href="/about#note-1">1</a>]</sup>  No compromises! THX/CHAT does not store or collect any user data and will never do so. The source code of the app is freely available and open on the github platform.</strong></p>
+
+<h3 i18n>🤐 Data</h3>
+<p i18n>The main idea of this app is to provide a "non-extractive" tool for digital communication in a world where "extraction" of user data is the dominant business model of most digital communication service providers (see e.g. <a href="https://calculatingempires.net" target="_blank">Calculating Empires</a> by Kate Crawford and Vladan Joler). THX/CHAT, on the other hand, will never store and analyze<sup>[<a href="/about#note-2">2</a>]</sup> any user data and, as an alternative to Big Tech services, will be managed and provided by its users, as far as "open source" and "fediverse"<sup>[<a href="/about#note-3">3</a>]</sup> concepts allow.</p>
+
+<h3 i18n>🫥 Anonymity</h3>
+<p>While the THX/CHAT application uses randomly generated user profiles, it is not an anonymization tool! THX/CHAT does not hide the communication patterns over the network. See, for example, <a href="https://dud.inf.tu-dresden.de/literatur/Anon_Terminology_v0.34.pdf" target="_blank">this paper on identity management</a>.</p>
+
+<h3 i18n>🍀 THX</h3>
+<p i18n>The abbreviation THX is often used in text messages and online communication as a shorthand for "Thanks". So, <strong>THX</strong> for:</p>
+
+<ul>
+    <li i18n>not collecting user data</li>
+    <li i18n>a secure way to communicate digitally</li>
+    <li i18n>a funny and fresh approach to digital communication</li>
+</ul>
+
+
+<h3 i18n>☀️ Notes</h3>
+<div class="notes">
+    <p id="note-1"><span class="note-number">[1]</span><span i18n>By default, the THX/CHAT will delete any message from the unit's memory after a short (1 minute) pre-defined period of time.</span></p>
+    <p id="note-2"><span class="note-number">[2]</span><span i18n>No data is stored on the server side, so no analysis can be performed there. On the client side, however, some data can be processed and analyzed in a runtime. This feature can be helpful for users to understand what digital communication really means and provide some insights that can be helpful in other contexts as well. The data and the products of its analysis are provided through the THX/CHAT in the same way as a chat message is - end-to-end encrypted, stored only in memory and only with a user connected to the same chat. This feature is part of the ongoing research and development.</span></p>
+    <p id="note-3"><span class="note-number">[3]</span><span i18n>A fediverse is the concept in networking and online services to avoid monopoly on services and to give autonomy to small "nodes" in a larger network (aka federation). The implementation of "fedi" protocols is part of the next development of THX/CHAT and will be available in the near future. To learn more about the concept, start <a href="https://en.wikipedia.org/wiki/Fediverse" target="_blank">here</a> on wikipedia.</span></p>
+</div>
+
+<thx-research-info></thx-research-info>

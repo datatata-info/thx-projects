@@ -1,5 +1,5 @@
 <div class="notifications-container">
-    @for(n of notifications; track n) {
+    @if(notification) {
         <div class="notification">
             <div class="notification-controls">
                 <mat-icon
@@ -7,11 +7,15 @@
                     class="material-symbols-outlined"
                     inline="true"
                 >chat</mat-icon>
-                <div class="title">
-                    {{getRoomName(n.roomId)}}
+                <div
+                    class="title"
+                    [routerLink]="['/chat', notification.roomId]"
+                    (click)="deleteNotification(notification)"
+                >
+                    {{getRoomName(notification.roomId)}}
                 </div>
                 <span class="spacer"></span>
-                <div class="close" (click)="close(n)">
+                <div class="close" (click)="close(notification)">
                     <mat-icon
                         color="primary"
                         class="material-symbols-outlined"
@@ -20,10 +24,10 @@
                 </div>
             </div>
             <thx-message
-                [routerLink]="['/chat', n.roomId]"
-                (click)="deleteNotification(n)"
-                [message]="n.message"
-                (expired)="onExpireMessage(n)"
+                [routerLink]="['/chat', notification.roomId]"
+                (click)="deleteNotification(notification)"
+                [message]="notification.message"
+                (expired)="onExpireMessage(notification)"
             ></thx-message>
         </div>
     }

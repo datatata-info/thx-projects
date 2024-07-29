@@ -9,33 +9,58 @@
     </button>
 </div>
 
-<div class="available-rooms">
-    @if(availableRooms.length) {
-        <h6 i18n>Join Public Chats</h6>
-        <div class="rooms-list">
-            @if(availableRooms.length < 10) {
-                @for(room of availableRooms; track room) {
-                    <button mat-stroked-button [routerLink]="room.id">{{room.config.roomName}} <small>({{room.size}})</small></button>
-                }
-            } @else {
-                <!-- TODO: SHOW SEARCH IN CHATS -->
-            }
-        </div>        
-    }
-    <!-- TEMP -->
-    <!-- <thx-message-input roomId="test"></thx-message-input> -->
-</div>
-<form class="new-room"[formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
-    <div>
-        <mat-form-field>
-            <mat-label i18n>Start New Chat</mat-label>
-            <input formControlName="roomName" matInput maxlength="18" placeholder="Ex. holidays in Rome" value="">
-        </mat-form-field>
-        
-        <section>
-            <mat-checkbox formControlName="public" i18n>Public</mat-checkbox>
-        </section>
+@if (socketConnected) {
+    <div class="available-rooms">
+        @if(availableRooms.length) {
+            <h6 i18n>Join Public Chats</h6>
+            <div class="rooms-list">
+                
+                <!-- ROOM SEARCH -->
+                <form>
+                    <mat-form-field>
+                        <input
+                            i18n-placeholder
+                            type="text"
+                            placeholder="Search..."
+                            matInput
+                            [formControl]="searchRoomControl"
+                            [matAutocomplete]="search"
+                        >
+                        <mat-autocomplete #search (optionSelected)="onRoomSelect($event.option.value)" [displayWith]="displaySearchRoomFn">
+                            @for (room of filteredRooms | async; track room) {
+                                <mat-option [value]="room">{{room.config.roomName}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </form>
+                <!-- popular rooms TODO: order by room.size -->
+                <div class="room-buttons">
+                    @for(room of availableRooms; let i = $index; track room) {
+                        @if (i <= 2) {
+                            <button mat-stroked-button [routerLink]="room.id">{{room.config.roomName}} <small>({{room.size}})</small></button>
+                        }
+                    }
+                </div>
+            </div>        
+        }
+        <!-- TEMP -->
+        <!-- <thx-message-input roomId="test"></thx-message-input> -->
     </div>
-    
-    <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Enter Chat <strong>{{roomForm.value.roomName}}</strong></button>
-</form>
+    <form class="new-room"[formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
+        <div>
+            <mat-form-field>
+                <mat-label i18n>Start New Chat</mat-label>
+                <input formControlName="roomName" matInput maxlength="18" placeholder="Ex. holidays in Rome" value="">
+            </mat-form-field>
+            
+            <section>
+                <mat-checkbox formControlName="public" i18n>Public</mat-checkbox>
+            </section>
+        </div>
+        
+        <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Enter Chat <strong>{{roomForm.value.roomName}}</strong></button>
+    </form>
+} @else {
+    <div class="warning" i18n [ngStyle]="{fontSize: 'xx-large'}">🫣</div>
+}
+

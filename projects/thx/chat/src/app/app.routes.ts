@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import { Routes, ExtraOptions } from '@angular/router';
 import { termsGuard } from './guards/terms.guard';
 // componets
 import { RoomComponent } from './components/room/room.component';
@@ -9,6 +9,12 @@ import { TermsComponent } from './components/terms/terms.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { AboutComponent } from './components/about/about.component';
 
+export const options: ExtraOptions = {
+    useHash: false,
+    anchorScrolling: 'enabled',
+    onSameUrlNavigation: 'reload'
+}
+
 export const routes: Routes = [
     { path: 'hello', component: HelloComponent },
     { path: 'about', component: AboutComponent },
@@ -17,7 +23,7 @@ export const routes: Routes = [
     { path: 'chat', component: RoomsComponent, canActivate: [termsGuard] },
     { path: 'chat/:roomId', component: RoomComponent, canActivate: [termsGuard] },
     { path: '',
-        redirectTo: '/chat', // temp -> production to hello
+        redirectTo: '/hello', // temp -> production to hello
         pathMatch: 'full'
     },
     { path: '**', component: NotFoundComponent }

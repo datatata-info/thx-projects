@@ -1,8 +1,8 @@
 import { ApplicationConfig, provideZoneChangeDetection, isDevMode } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withRouterConfig } from '@angular/router';
 import { provideThxSocket, SocketServerConfig } from '@thx/socket';
 
-import { routes } from './app.routes';
+import { routes, options } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideServiceWorker } from '@angular/service-worker';
 
@@ -19,7 +19,10 @@ const SOCKET_SERVER_CONFIG: SocketServerConfig = {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withRouterConfig(options)
+    ),
     provideThxSocket(SOCKET_SERVER_CONFIG),
     provideAnimationsAsync(), provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),

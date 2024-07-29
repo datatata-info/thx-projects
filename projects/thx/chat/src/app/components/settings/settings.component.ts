@@ -145,7 +145,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   resetChatOptions(): void {
-    if (this.chatService.confirmQuestion($localize `Want to reset all settings to default?`)) {
+    if (this.chatService.confirmQuestion($localize `Want to reset all settings to default? You will loose ALL chat subscribtions.`)) {
       this.chatService.resetOptions();
     }
   }
