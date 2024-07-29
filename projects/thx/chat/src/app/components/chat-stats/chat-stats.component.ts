@@ -81,7 +81,7 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
       // console.log('screen.height', screen.height);
       // console.log('clientY', e.touches[0].clientY);
       const y = e.touches[0].clientY - this.elmBox.top;
-      if (y >= this.minHeight && y < screen.height - this.elmBox.top) {
+      if (y >= this.elmBox.top && y < screen.height - this.elmBox.top) {
         this.elm.nativeElement.style.height = `${y}px`;
       }
     }

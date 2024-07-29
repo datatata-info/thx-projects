@@ -21,4 +21,8 @@ export class EmojiService {
 
     return '';
   }
+
+  getRandomAnimalNature(): string {
+    return this.getRandomEmoji('Animals & Nature');
+  }
 }

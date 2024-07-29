@@ -78,6 +78,10 @@ export class ColorService {
     }
   }
 
+  randomIntFromInterval(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
 
   private randomRgba(alpha: number = 1): string {
     const round = Math.round, random = Math.random, s = 255;

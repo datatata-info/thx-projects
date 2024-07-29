@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 // rxjs
-import { Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 
 
@@ -10,33 +10,49 @@ import { Subject } from 'rxjs';
 export class VoiceOverService {
 
   private synth: SpeechSynthesis = window.speechSynthesis;
-  private voices: SpeechSynthesisVoice[] = this.synth.getVoices();
+  private _voices: SpeechSynthesisVoice[] = this.synth.getVoices();
   private selectedVoice!: SpeechSynthesisVoice | null;
+  selectedLanguage: string = 'en-US';
+  voices: BehaviorSubject<SpeechSynthesisVoice[]> = new BehaviorSubject(this._voices);
   // TODO: choose language EN
 
   constructor() {
     const userLang = navigator.language;
     console.log('userLang', userLang);
     // console.log('voices', this.voices);
-    if (!this.voices.length) {
+    if (!this._voices.length) {
       this.synth.addEventListener('voiceschanged', () => {
-        this.voices = this.synth.getVoices();
-        this.selectedVoice = this.chooseVoice(this.voices);
+        this._voices = this.synth.getVoices();
+        this.voices.next(this._voices);
+        this.selectedVoice = this.chooseDefaultVoice();
       });
     } else {
-      this.selectedVoice = this.chooseVoice(this.voices);
+      this.selectedVoice = this.chooseDefaultVoice();
     }
   }
 
-  private chooseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  selectVoice(voice: SpeechSynthesisVoice): void {
+    this.selectedVoice = voice;
+  }
+
+  findVoiceByNameAndLang(name: string, lang: string): SpeechSynthesisVoice | null {
+    for (const voice of this._voices) {
+      if (voice.name === name && voice.lang === lang) {
+        return voice;
+      }
+    }
+    return null;
+  }
+
+  chooseDefaultVoice(): SpeechSynthesisVoice | null {
     // console.log('voices', this.voices);
-    for (const voice of voices) {
+    for (const voice of this._voices) {
       // if (voice.default) console.log('default voice', voice);
       if (
         // (voice.default && 
         // voice.lang === 'en-US'/* 'en-GB' */) ||
         (voice.localService && 
-        voice.lang === 'en-GB' &&
+        voice.lang === this.selectedLanguage &&
         !voice.voiceURI.includes('eloquence') &&
         !voice.voiceURI.includes('synthesis') &&
         !voice.voiceURI.includes('speech'))

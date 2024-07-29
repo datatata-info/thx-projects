@@ -6,6 +6,7 @@ import { ChatSocketService } from './services/chat-socket/chat-socket.service';
 import { EmojiService } from './services/emoji/emoji.service';
 import { ColorService } from './services/color/color.service';
 import { ChatService } from './services/chat/chat.service';
+import { VoiceOverService } from './services/voice-over/voice-over.service';
 // components
 import { LocalNotificationsComponent } from './components/local-notifications/local-notifications.component';
 // models
@@ -33,15 +34,31 @@ export class AppComponent implements OnInit, OnDestroy {
     private emojiService: EmojiService,
     private colorService: ColorService,
     private chatService: ChatService,
+    private voiceOverService: VoiceOverService,
     private router: Router
   ){}
 
   ngOnInit(): void {
     const chatOptions = this.chatService.options;
+    if (chatOptions.voiceOverOptions.language) {
+      const lang = chatOptions.voiceOverOptions.language;
+      this.voiceOverService.selectedLanguage = lang;
+      if (chatOptions.voiceOverOptions.voice) {
+        const voiceName = chatOptions.voiceOverOptions.voice;
+        const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, lang);
+        if (voice) this.voiceOverService.selectVoice(voice);
+      } else {
+        this.voiceOverService.chooseDefaultVoice();
+      }
+    }
     if (!chatOptions.user) {
+      const colors = this.colorService.generateHslaColors(
+        this.colorService.randomIntFromInterval(40, 90),
+        this.colorService.randomIntFromInterval(30, 60)
+      );
       this.user = new User(
-        this.emojiService.getRandomEmoji('Animals & Nature'),
-        this.colorService.generateHslaColors(70, 40)[0]
+        this.emojiService.getRandomAnimalNature(),
+        colors[0]
       );
       // CREATE AND LOGIN USER EVERY NEW SESSION
       // console.log('USER WITH COLOR', this.user);

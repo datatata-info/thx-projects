@@ -1,8 +1,69 @@
-<p>settings works!</p>
+<h4>
+    <mat-icon color="primary" class="material-symbols-outlined" inline="true">settings</mat-icon>&nbsp;
+    <span i18n >Settings</span>
+    <span class="spacer"></span>
+    <button mat-icon-button class="large" (click)="resetChatOptions()">
+        <mat-icon
+            color="primary"
+            class="material-symbols-outlined"
+            inline="true"
+        >reset_settings</mat-icon>
+    </button>
+</h4>
+<form [formGroup]="settingsForm" (ngSubmit)="saveSttings()">
+    <div class="nickname">
+        <div i18n>Nickname: </div>
+        <div [ngStyle]="{fontSize: 'xx-large'}">
+            {{settingsForm.value.nickname}}
+        </div>
+        <button mat-icon-button (click)="reNickName()" type="button">
+            <mat-icon color="primary" class="material-symbols-outlined">refresh</mat-icon>
+        </button>
+    </div>
+    <div class="color">
+        <div i18n>Color: </div>
+        <div [ngStyle]="{backgroundColor: settingsForm.value.color, width: '24px', height: '24px'}"></div>
+        <button mat-icon-button (click)="reColor()" type="button">
+            <mat-icon color="primary" class="material-symbols-outlined">refresh</mat-icon>
+        </button>
+    </div>
+    <div class="voice-over">
+        <section>
+            <mat-checkbox formControlName="voiceOver">VoiceOver</mat-checkbox>
+        </section>
+    </div>
+    @if(settingsForm.value.voiceOver) {
+        <div class="voice-over-lang">
+            <mat-form-field>
+                <mat-label i18n>VoiceOver Language</mat-label>
+                <mat-select formControlName="voiceOverLang" [(value)]="settingsForm.value.voiceOverLang" (valueChange)="setLangVoiceList($event)">
+                    @for (lang of langList; track lang) {
+                        <mat-option [value]="lang">{{lang}}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div class="voice-over-voice">
+            <mat-form-field>
+                <mat-label i18n>Voice</mat-label>
+                <mat-select formControlName="voiceOverVoice" [(value)]="settingsForm.value.voiceOverVoice">
+                    @for (voice of langVoiceList; track voice) {
+                        <mat-option [value]="voice.name">{{voice.name}}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+        </div>
+    }
+    <div class="terms-approved">
+        <section>
+            <mat-checkbox formControlName="termsApproved">
+                <a [routerLink]="['/terms']" target="_blank">Terms & Privacy Policy</a> (rev{{chatOptions.termsRevision}})
+            </mat-checkbox>
+        </section>
+    </div>
+    <div class="settings-controls">
+        <button mat-flat-button type="submit">OK</button>
+    </div>
+</form>
 
-TODO: <br>
-- sett all options here <br>
-- nickname, color, voiceOver (+ voiceOver voice and language settings) <br>
-- terms (reject, read) [terms version..., revision] <br>
-- 
 

@@ -1,11 +1,20 @@
 import { Injectable } from '@angular/core';
 import { User } from '@thx/socket';
 
+interface VoiceOverOptions {
+  [key: string]: any,
+  language: string,
+  voice: string
+}
+
 export interface ChatOptions {
+  [key: string]: any,
   user: User | undefined,
   subscribedRooms: string[],
   voiceOver: boolean,
-  termsApproved: boolean
+  voiceOverOptions: VoiceOverOptions, // language, voice
+  termsApproved: boolean,
+  termsRevision: number
 }
 
 const CHAT_OPTIONS_STORAGE_NAME: string = 'thx-chat-options';
@@ -27,7 +36,12 @@ export class ChatService {
       user: undefined,
       subscribedRooms: [],
       voiceOver: true,
-      termsApproved: false
+      voiceOverOptions: {
+        language: 'en-US',
+        voice: ''
+      },
+      termsApproved: false,
+      termsRevision: 0
     }
     const optionsFromStorage: string | null = localStorage.getItem(CHAT_OPTIONS_STORAGE_NAME)
     if (optionsFromStorage !== null) {
@@ -38,6 +52,11 @@ export class ChatService {
     return defaultOptions;
   }
 
+  saveOptions(options: ChatOptions): void {
+    this.options = options;
+    this.updateOptions();
+  }
+
   private updateOptions(): void {
     if (this.options) {
       localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
@@ -45,7 +64,7 @@ export class ChatService {
   }
 
   setOption(name: string, value: any): void {
-    this.options[name as keyof ChatOptions] = value;
+    this.options[name] = value;
     this.updateOptions();
     // localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
   }

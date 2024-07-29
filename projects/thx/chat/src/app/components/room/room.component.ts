@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 // material
 import { MaterialModule } from '../../modules/material/material.module';
 // components
@@ -21,7 +21,8 @@ import { Message, Room, RoomMessage, User } from '@thx/socket';
     MessageComponent,
     MaterialModule,
     MessageInputComponent,
-    ChatStatsComponent
+    ChatStatsComponent,
+    RouterModule
   ],
   templateUrl: './room.component.html',
   styleUrl: './room.component.scss'
@@ -167,6 +168,18 @@ export class RoomComponent implements OnInit, OnDestroy {
         break;
       }
     }
+  }
+
+  openSettings(): void {
+    this.notifications = true;
+    this.router.navigate(['/settings']);
+    // if (!this.notifications) {
+    //   if (this.chatService.confirmQuestion($localize `You are going to leave chat. If you want to stay subscribed on messages, turn on notifications bellow.`)) {
+    //     this.router.navigate(['/settings']);
+    //   }
+    // } else {
+    //   this.router.navigate(['/settings']);
+    // }
   }
 
   leaveRoom(): void {

@@ -143,12 +143,6 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onPublicRoomUpdatedSub.unsubscribe();
   }
 
-  resetChatOptions(): void {
-    if (this.chatService.confirmQuestion($localize `Want to reset user settings?`)) {
-      this.chatService.resetOptions();
-    }
-  }
-
   createAndJoinRoom(): void {
     if (!this.roomForm.valid) {
       console.error('check form');

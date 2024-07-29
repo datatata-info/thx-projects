@@ -1,11 +1,11 @@
 <div class="welcome">
     <h3 i18n [ngStyle]="{color: user.color ? user.color : 'unset'}">Welcome {{user.nickname}}</h3>
-    <button mat-icon-button class="large" (click)="resetChatOptions()">
+    <button mat-icon-button class="large" [routerLink]="['/settings']">
         <mat-icon
             color="primary"
             class="material-symbols-outlined"
             inline="true"
-        >reset_settings</mat-icon>
+        >tune</mat-icon>
     </button>
 </div>
 

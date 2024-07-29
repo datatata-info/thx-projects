@@ -14,6 +14,12 @@
                             <mat-icon [ngStyle]="{opacity: .5}" class="material-symbols-outlined">lock</mat-icon>
                         }
                         <mat-icon [ngStyle]="{opacity: .5}" class="material-symbols-outlined">encrypted</mat-icon>
+                        <button mat-icon-button (click)="openSettings()">
+                            <mat-icon
+                                color="primary"
+                                class="material-symbols-outlined"
+                            >tune</mat-icon>
+                        </button>
                     </div>
                     <h6>{{room.config.roomName}}</h6>
                 </div>
