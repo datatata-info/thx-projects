@@ -3,7 +3,7 @@
   "short_name": "@thx/chat",
   "theme_color": "#00b8d4",
   "background_color": "#191c1c",
-  "display": "standalone",
+  "display": "fullscreen",
   "scope": "./",
   "start_url": "./",
   "icons": [
