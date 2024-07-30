@@ -1,6 +1,6 @@
 import { Injectable, Inject, Provider, EnvironmentProviders } from '@angular/core';
 // socket
-import { io, Socket } from 'socket.io-client';
+import { io, Socket, Manager } from 'socket.io-client';
 // forge
 import * as forge from 'node-forge';
 // uuid
@@ -8,10 +8,11 @@ import { v4 as uuidv4 } from 'uuid';
 // rxjs
 import { Subject, BehaviorSubject } from 'rxjs';
 
-let HOST: string, PORT: number, USE_ENCRYPTION: boolean;
+let HOST: string, PORT: number, USE_ENCRYPTION: boolean, PATH: string;
 
 export interface SocketServerConfig {
   host: string,
+  path?: string,
   port: number,
   useEncryption: boolean
 }
@@ -20,6 +21,7 @@ export function provideThxSocket(config: SocketServerConfig): EnvironmentProvide
   // console.log('provideThxSocket', config);
   HOST = config.host;
   PORT = config.port;
+  PATH = config.path ? config.path : '';
   USE_ENCRYPTION = config.useEncryption;
   const providers: any = [];
   return providers;
@@ -108,6 +110,7 @@ export class SocketService {
   private useEncryption: boolean = true;
   private keyPair!: forge.pki.rsa.KeyPair;
   private socketHost: string = '0.0.0.0';
+  private socketPath: string = '';
   private socketPort: number = 3001;
   private socket!: Socket;
   private userKeys: any = {};
@@ -115,6 +118,7 @@ export class SocketService {
   public appName: string = '';
   public user!: User;
   public connected: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  private _connected: boolean = false;
 
   public onCertGenerated: BehaviorSubject<boolean> = new BehaviorSubject(false);
   public onNewRoom: Subject<Room> = new Subject();
@@ -128,9 +132,11 @@ export class SocketService {
   constructor() {
     if (HOST) this.socketHost = HOST;
     if (PORT) this.socketPort = PORT;
+    if (PATH) this.socketPath = PATH;
     if (USE_ENCRYPTION === false) this.useEncryption = false;
     if (this.useEncryption) {
       // check local storage
+      // console.log('appName', this.appName);
       const savedCert = localStorage.getItem('thx-cert');
       if (savedCert) {
         const cert: LocalStorageCert = JSON.parse(savedCert);
@@ -175,11 +181,16 @@ export class SocketService {
 
   connect(): void {
     let protocol = this.useEncryption ? 'https' : 'http';
-    this.socket = io(`${protocol}://${this.socketHost}:${this.socketPort}`, {
+    const url = `${protocol}://${this.socketHost}:${this.socketPort}`;
+    this.socket = io(url, {
+      path: this.socketPath ? this.socketPath + '/socket.io' : '/socket.io',
       query: {
         "appName": this.appName
       }
     });
+    // console.log('socket', this.socket);
+    // console.log('socket url', url);
+    // this.socket = manager.socket('/');
     this.listenSocket();
   }
 
@@ -199,10 +210,10 @@ export class SocketService {
   //   this.socket.emit('close', this.user.id);
   // }
 
-  createRoom(roomConfig: RoomConfig): Subject<any> {
+  createRoom(roomConfig: RoomConfig, roomId?: string): Subject<Room> {
     const subject: Subject<any> = new Subject();
     const room: Room = {
-      id: uuidv4(),
+      id: roomId ? roomId : uuidv4(),
       config: roomConfig,
       appName: this.appName,
       admin: this.user.id,
@@ -254,18 +265,20 @@ export class SocketService {
     return subject;
   }
 
-  sendMessage(value: string, roomId: string): Message {
+  sendMessage(value: string | any, roomId: string): Message {
+    const v = JSON.parse(JSON.stringify(value)); // deep copy
+    console.log(`send message to roomId ${roomId}`, v);
     const message = {
       id: uuidv4(),
       user: this.user,
       time: new Date(),
       expiry: 60 * 1000,
-      value: value
+      value: v
     }
     // message.value = 
     if (this.useEncryption) {
-      const messageValue = encodeURIComponent(message.value);
-      // console.log('btoa value', messageValue);
+      const messageValue = typeof value === 'string' ? encodeURIComponent(message.value) : encodeURIComponent(JSON.stringify(message.value));
+      console.log('message value', messageValue);
       const messageValueObject: any = {};
       for (const userId in this.userKeys) {
         const userPublicKey = this.userKeys[userId];
@@ -290,12 +303,14 @@ export class SocketService {
     this.socket.on('connect', () => {
       // console.log('socket connected to server', this.socket.connected);
       this.connected.next(true);
+      this._connected = true;
       this.getAvailableRooms();
     });
 
     this.socket.on('disconnect', () => {
       console.log('socket disconnected');
       this.connected.next(false);
+      this._connected = false; 
     });
 
     this.socket.on('reconnect', () => {
@@ -364,6 +379,11 @@ export class SocketService {
           const messageValue = this.keyPair.privateKey.decrypt(value, 'RSA-OAEP');
           // console.log('decrypted message', messageValue);
           message.value = decodeURIComponent(messageValue);
+          try {
+            message.value = JSON.parse(message.value);
+          } catch(e) {
+            console.log('message not json');
+          }
           this.onMessage.next({message: message, roomId: roomId});
         }
       } else {
@@ -373,23 +393,29 @@ export class SocketService {
 
     });
   }
+  // http://joinme-muni.cz/data/articles/2021/06/04/60ba1ed8a3239/thx-javurek-jerabek-revize-final-format2.pdf
+  // Pokud chce Bob poslat zprávu Alici, zašifruje zprávu jejím veřejným klíčem
+  // (pouze Alice ji pak dokáže dešifrovat pomocí svého soukromého klíče)
+  // a zprávu podepíše svým soukromým klíčem (kdokoliv se znalostí Bobova veřejného klíče dokáže ověřit, že zpráva pochází od Boba).
+  // [...] sharedKey
+  // V případě symetrické kryptografie je nutné, aby obě komunikující strany, tedy v našem případě Alice a Bob, znaly sdílené tajemství (sdílený klíč). Pomocí tohoto klíče pak šifrují veškerou komunikaci mezi sebou navzájem.
 
-  // private createValidator(str: string): string {
-  //   if (this.useEncryption) {
-  //     const md: any = forge.md.sha1.create();
-  //     if (str) {
-  //       md.update(str, 'utf8');
-  //     }
-  //     var pss = forge.pss.create({
-  //       md: forge.md.sha1.create(),
-  //       mgf: forge.mgf.mgf1.create(md.sha1.create()),
-  //       saltLength: 20
-  //       // optionally pass 'prng' with a custom PRNG implementation
-  //       // optionalls pass 'salt' with a forge.util.ByteBuffer w/custom salt
-  //     });
-  //     var signature = btoa(this.keyPair.privateKey.sign(md, pss));
-  //     return signature;
-  //   }
-  //   return '';
-  // }
+  private createValidator(str: string): string {
+    if (this.useEncryption) {
+      const md: any = forge.md.sha1.create();
+      if (str) {
+        md.update(str, 'utf8');
+      }
+      var pss = forge.pss.create({
+        md: forge.md.sha1.create(),
+        mgf: forge.mgf.mgf1.create(md.sha1.create()),
+        saltLength: 20
+        // optionally pass 'prng' with a custom PRNG implementation
+        // optionalls pass 'salt' with a forge.util.ByteBuffer w/custom salt
+      });
+      var signature = btoa(this.keyPair.privateKey.sign(md, pss));
+      return signature;
+    }
+    return '';
+  }
 }
