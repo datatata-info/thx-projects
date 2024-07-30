@@ -2,8 +2,6 @@ import { Injectable } from '@angular/core';
 // socket
 import { SocketService, Room, User } from '@thx/socket';
 import { Subscription } from 'rxjs';
-// uuid
-import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
