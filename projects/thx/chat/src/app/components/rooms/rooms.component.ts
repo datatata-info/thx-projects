@@ -68,9 +68,12 @@ export class RoomsComponent implements OnInit, OnDestroy {
     console.log('-----rooms init-----');
     // this.socketConnected = this.chatSocketService.connected;
     this.onSocketConnectionChange = this.chatSocketService.connected.subscribe({
-      next: (connected: boolean) => this.socketConnected = connected
+      next: (connected: boolean) => {
+        this.socketConnected = connected;
+        console.log('connected?', connected);
+      }
     });
-    console.log('chatSocketService.connected', this.chatSocketService.connected);
+    // console.log('chatSocketService.connected', this.chatSocketService.connected);
     this.filteredRooms = this.searchRoomControl.valueChanges.pipe(
       startWith(''),
       map(value => this._filter(value || '')),

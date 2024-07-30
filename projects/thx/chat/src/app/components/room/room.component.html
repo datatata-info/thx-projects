@@ -32,7 +32,11 @@
                 </div>
             </div>
             <!-- stats -->
-            <thx-chat-stats></thx-chat-stats>
+            <thx-chat-stats 
+                [roomId]="room.id"
+                [messageSent]="sentMessage"
+                [messageRecieved]="recievedMessage"
+            ></thx-chat-stats>
     </div>
     
     <div class="chat-messages">
@@ -54,7 +58,7 @@
     </div>
 
     <div class="chat-input">
-        <thx-message-input [color]="user.color" [roomId]="room.id" (onMessage)="pushMessage($event)"></thx-message-input>
+        <thx-message-input [color]="user.color" [roomId]="room.id" (onMessage)="pushMyMessage($event)"></thx-message-input>
     </div>
 
     <div class="chat-options">

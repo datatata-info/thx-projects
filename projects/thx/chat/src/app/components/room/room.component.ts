@@ -44,6 +44,9 @@ export class RoomComponent implements OnInit, OnDestroy {
   private CLOSE_ROOM_IN: number = 10 * 1000;
 
   messages: Message[] = [];
+  // for stats
+  recievedMessage!: string;
+  sentMessage!: string;
 
   voiceOver: boolean = true;
   notifications: boolean = false;
@@ -120,6 +123,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       next: (result: RoomMessage) => {
         if (result.roomId === this.room.id) { // show only relevant messages for room (exclude notifications from other rooms)
           this.messages.push(result.message);
+          this.recievedMessage = result.message.id;
           this.playSoundIn();
         }
       },
@@ -254,8 +258,9 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.chatService.subscribeRoom(this.notifications, this.room.id);
   }
 
-  pushMessage(message: Message): void {
+  pushMyMessage(message: Message): void {
     this.messages.push(message);
+    this.sentMessage = message.id;
   }
 
   private playSoundIn(): void {
