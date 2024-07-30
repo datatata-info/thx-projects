@@ -6,9 +6,9 @@
 </h2>
 
 <div class="terms-controls">
-    <button mat-flat-button color="accent" (click)="rejectTerms()">Reject</button>
+    <button mat-flat-button color="accent" (click)="rejectTerms()" i18n>Reject</button>
     <span class="spacer"></span>
-    <button mat-flat-button (click)="acceptTerms()" [disabled]="!additioanalAccepts.valid">Accept</button>
+    <button mat-flat-button (click)="acceptTerms()" [disabled]="!additioanalAccepts.valid" i18n>Accept</button>
 </div>
 <form [formGroup]="additioanalAccepts">
     
@@ -18,8 +18,8 @@
     
     <p><button mat-stroked-button [routerLink]="['/about']" i18n>About</button></p>
     
-    <h3>Terms of Service</h3>
-    <h6>1. Acceptance of Terms</h6>
+    <h3 i18n>Terms of Service</h3>
+    <h6 i18n>1. Acceptance of Terms</h6>
     
     <p i18n>By using "thx/chat", you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the app.</p>
     
@@ -30,7 +30,7 @@
     <div [ngClass]="{'highlighted': additioanalAccepts.value.userConduct ? false : true}">
         <h6 i18n>3. User Conduct</h6>
         
-        <p>You agree to use "thx/chat" for lawful purposes only. You are responsible for all content you send and receive through the app.</p>
+        <p i18n>You agree to use "thx/chat" for lawful purposes only. You are responsible for all content you send and receive through the app.</p>
         <section>
             <mat-checkbox required="true" i18n formControlName="userConduct">I Understand</mat-checkbox>
         </section>
