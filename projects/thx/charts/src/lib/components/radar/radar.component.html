@@ -1,0 +1,9 @@
+@for(axeName of axes; let i = $index; track axeName) {
+
+    <div class="axe-container" [ngStyle]="{transform: 'rotate(' + (360 / axes.length) * i + 'deg)'}">
+        <!-- axe -->
+        <div [ngClass]="{axe: true, name: axeName}" [ngStyle]="{backgroundColor: colorScheme.color}"></div>
+        <!-- values -->
+    </div>
+    
+}   

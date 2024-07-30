@@ -5,6 +5,9 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "paths": {
+      "@thx/charts": [
+        "./dist/thx/charts"
+      ],
       "@thx/dtmqtt": [
         "./dist/thx/dtmqtt"
       ],

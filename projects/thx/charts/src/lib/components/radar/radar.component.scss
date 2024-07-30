@@ -1,0 +1,20 @@
+:host {
+    display: inline-block;
+    width: 360px;
+    height: 360px;
+    color: white;
+    background-color: black;
+    // max-width: 100%;
+    // height: auto;
+    .axe-container {
+        position: absolute;
+        top: 50%;
+        transform-origin: center center;
+        .axe {
+            width: 100%;
+            height: 2px;
+             
+        }
+    }
+    
+}
