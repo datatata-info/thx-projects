@@ -457,11 +457,13 @@ thx-local-notifications {
 
 thx-settings {
     width: 100%;
-    height: 100;
+    height: 100%;
     display: flex;
     flex-direction: column;
     padding: $space;
     font-size: large;
+    overflow-y: scroll;
+    min-height: 100%;
     h4 {
         display: flex;
         flex-direction: row;

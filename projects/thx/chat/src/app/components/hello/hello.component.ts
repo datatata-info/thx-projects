@@ -3,6 +3,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MaterialModule } from '../../modules/material/material.module';
 // router
 import { Router, RouterModule } from '@angular/router';
+// temp
+import { RadarComponent, RadarData, MOCK_DATA } from '@thx/charts';
 // services
 import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { ChatService } from '../../services/chat/chat.service';
@@ -12,7 +14,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'thx-hello',
   standalone: true,
-  imports: [ MaterialModule, RouterModule ],
+  imports: [ MaterialModule, RouterModule, RadarComponent ],
   templateUrl: './hello.component.html',
   styleUrl: './hello.component.scss'
 })
@@ -20,6 +22,7 @@ export class HelloComponent implements OnInit, OnDestroy {
 
   private certSub: Subscription = new Subscription();
   canEnterChats: boolean = false;
+  radarMockData: RadarData[] = MOCK_DATA;
 
   constructor(
     private router: Router,
