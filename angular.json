@@ -9,8 +9,7 @@
         "sourceLocale": "en-US",
         "locales": {
           "cs-CZ": {
-            "baseHref": "cs-CZ",
-            "translation": "messages.cs-CZ.xlf"
+            "translation": "projects/thx/chat/src/locale/messages.cs-CZ.json"
           }
         }
       },
@@ -27,7 +26,7 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "localize": true,
-            "outputPath": "dist/thx/chat",
+            "outputPath": "dist/thx/build/chat",
             "index": "projects/thx/chat/src/index.html",
             "browser": "projects/thx/chat/src/main.ts",
             "polyfills": [
@@ -86,7 +85,11 @@
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n"
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "outputPath": "projects/thx/chat/src/locale",
+            "format": "json"
+          }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
@@ -138,6 +141,44 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "tsConfig": "projects/thx/socket/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    },
+    "@thx/charts": {
+      "projectType": "library",
+      "root": "projects/thx/charts",
+      "sourceRoot": "projects/thx/charts/src",
+      "prefix": "thx-charts",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/thx/charts/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/thx/charts/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/thx/charts/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/thx/charts/tsconfig.spec.json",
             "polyfills": [
               "zone.js",
               "zone.js/testing"
