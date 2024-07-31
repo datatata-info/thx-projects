@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1722346469389,
+  "timestamp": 1722462515138,
   "index": "/cs-CZ/index.html",
   "assetGroups": [
     {
@@ -11,14 +11,14 @@
         "ignoreVary": true
       },
       "urls": [
-        "/cs-CZ/chunk-C4BXG3LW.js",
-        "/cs-CZ/chunk-DY2VM6GL.js",
+        "/cs-CZ/chunk-BAHWGM4C.js",
+        "/cs-CZ/chunk-D5OCQ3ZN.js",
         "/cs-CZ/favicon.ico",
         "/cs-CZ/index.html",
-        "/cs-CZ/main-FYP2LXCY.js",
+        "/cs-CZ/main-HVTBXYN4.js",
         "/cs-CZ/manifest.webmanifest",
         "/cs-CZ/polyfills-RVO5MQLM.js",
-        "/cs-CZ/styles-YQ5UZMT6.css"
+        "/cs-CZ/styles-GRJDANUO.css"
       ],
       "patterns": []
     },
@@ -44,8 +44,8 @@
   ],
   "dataGroups": [],
   "hashTable": {
-    "/cs-CZ/chunk-C4BXG3LW.js": "3b7669c1c06a1b3674797fc7a28327eeb23d8589",
-    "/cs-CZ/chunk-DY2VM6GL.js": "f0d940fa5489aae5a9b39767122c2526d2ecfdf0",
+    "/cs-CZ/chunk-BAHWGM4C.js": "fc2ae51f6fef8b6a36e803edd7d68a6494ab835f",
+    "/cs-CZ/chunk-D5OCQ3ZN.js": "69e460fcbe4208c6d35092fcdb194773df359a5a",
     "/cs-CZ/favicon.ico": "7f39c2a6dc6f78d56bd4d3c88c0f53aac6b38c19",
     "/cs-CZ/icons/icon-128x128.png": "064967e17a58ea059dc31622894a520c18277d7d",
     "/cs-CZ/icons/icon-144x144.png": "fdd8656c2caa8dd79efbbc15b0178137ef51ca8d",
@@ -55,11 +55,11 @@
     "/cs-CZ/icons/icon-512x512.png": "d048975d14fc719e1a56043356064efe91c62008",
     "/cs-CZ/icons/icon-72x72.png": "2bcb224548a4a6137e9c630b64353ab238138640",
     "/cs-CZ/icons/icon-96x96.png": "346dfa587b48d438aea1aa9d5884576ee32c000c",
-    "/cs-CZ/index.html": "2dd2facfa8a11b4f13e3dec4d7b23829968184d0",
-    "/cs-CZ/main-FYP2LXCY.js": "11603e72da2e6ec1ace876d2b9b56c88837ce497",
+    "/cs-CZ/index.html": "b632557c75c5bb60f0a51e8e4777f5330964542a",
+    "/cs-CZ/main-HVTBXYN4.js": "f3fa3da8b704e87971ac2d22be6665b64bbca38e",
     "/cs-CZ/manifest.webmanifest": "88288e75484625c11763007ab3b4985ff3f7c82a",
     "/cs-CZ/polyfills-RVO5MQLM.js": "63cd1a1f74535668548a5a5db7a8458f587c3162",
-    "/cs-CZ/styles-YQ5UZMT6.css": "8c09953bdd4d131f4dcbf261f833bae7bb0caa55"
+    "/cs-CZ/styles-GRJDANUO.css": "d50e12bdf5c414863119ec194a45e062039c8aef"
   },
   "navigationUrls": [
     {
