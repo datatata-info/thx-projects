@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 // socket
 import { SocketService, Room, User } from '@thx/socket';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +9,6 @@ import { Subscription } from 'rxjs';
 export class ChatSocketService extends SocketService {
 
   private rooms: any = {};
-  joinedRooms: string[] = [];
-
   private certGenSub: Subscription = new Subscription();
 
   constructor() {
@@ -27,30 +25,14 @@ export class ChatSocketService extends SocketService {
     });
   }
 
-  join(room: Room): void {
-    this.rooms[room.id] = room;
-    this.joinedRooms.push(room.id);
-  }
 
   getRoom(roomId: string): Room {
     return this.rooms[roomId];
   }
 
-  sendByAndLeaveRoom(roomId: string): void {
-    for (let i = 0; i < this.joinedRooms.length; i++) {
-      const id = this.joinedRooms[i];
-      // console.log(`exit ${roomId}`, id);
-      if (id === roomId) {
-        this.sendMessage('👋 ...leaving chat', roomId);
-        this.leaveRoom(roomId);
-        this.joinedRooms.splice(i, 1);
-        break;
-      }
-    }
+  sendByeAndLeaveRoom(roomId: string): void {
+    this.sendMessage('👋 ...leaving chat', roomId);
+    this.leaveRoom(roomId);
   }
 
-  isRoomJoined(roomId: string): boolean {
-    if (this.joinedRooms.includes(roomId)) return true;
-    return false;
-  }
 }

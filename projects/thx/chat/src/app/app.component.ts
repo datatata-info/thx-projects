@@ -2,11 +2,11 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 // services
-import { ChatSocketService } from './services/chat-socket/chat-socket.service';
 import { EmojiService } from './services/emoji/emoji.service';
 import { ColorService } from './services/color/color.service';
 import { ChatService } from './services/chat/chat.service';
 import { VoiceOverService } from './services/voice-over/voice-over.service';
+import { AudioService } from './services/audio/audio.service';
 // components
 import { LocalNotificationsComponent } from './components/local-notifications/local-notifications.component';
 // models
@@ -30,15 +30,16 @@ export class AppComponent implements OnInit, OnDestroy {
   addNotification: RoomMessage | null = null;
 
   constructor(
-    private chatSocketService: ChatSocketService,
+    // private chatSocketService: ChatSocketService,
     private emojiService: EmojiService,
     private colorService: ColorService,
     private chatService: ChatService,
     private voiceOverService: VoiceOverService,
-    private router: Router
+    private audioService: AudioService
   ){}
 
   ngOnInit(): void {
+    this.audioService.listenUserEventToActivateContext();
     const chatOptions = this.chatService.options;
     if (chatOptions.voiceOverOptions.language) {
       const lang = chatOptions.voiceOverOptions.language;
@@ -69,7 +70,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.user = this.chatService.getOption('user');
     }
     // login user
-    this.chatSocketService.login(this.user);
+    this.chatService.login(this.user);
 
     // accept terms
     // if (!chatOptions.termsApproved) {
@@ -77,7 +78,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // }
 
     // notifications
-    this.onMessageNotification = this.chatSocketService.onMessage.subscribe({
+    this.onMessageNotification = this.chatService.onMessage.subscribe({
       next: (roomMessage: RoomMessage) => {
         // this.messages.push(message);
         if (roomMessage && this.chatService.inRoom !== roomMessage.roomId) this.addNotification = roomMessage;

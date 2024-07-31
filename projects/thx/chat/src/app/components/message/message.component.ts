@@ -15,7 +15,6 @@ import { MaterialModule } from '../../modules/material/material.module';
 // services
 import { VoiceOverService } from '../../services/voice-over/voice-over.service';
 import { ChatService } from '../../services/chat/chat.service';
-import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { TimerService, TimerData } from '../../services/timer/timer.service';
 // rxjs
 import { Subscription } from 'rxjs';
@@ -41,7 +40,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     private elm: ElementRef,
     private voiceOverService: VoiceOverService,
     private chatService: ChatService,
-    private chatSocketService: ChatSocketService,
     private timerService: TimerService
   ){}
 
@@ -51,7 +49,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.message.user && this.message.user.color) {
         this.userColor = this.message.user.color;
       }
-      if (this.chatService.options.voiceOver && this.chatSocketService.user.id !== this.message.user.id) {
+      if (this.chatService.options.voiceOver && this.chatService.user.id !== this.message.user.id) {
         this.voiceOverService.speak(`${this.message.user.nickname}: ${this.message.value}`);
       }
   

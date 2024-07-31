@@ -16,13 +16,18 @@ import { ChatService } from '../../services/chat/chat.service';
 import { User, Room, RoomMessage } from '@thx/socket';
 // components
 import { RadarComponent, RadarData, RadarDataItem, MOCK_DATA } from '@thx/charts';
+import { ConsoleComponent } from '@thx/charts';
 // rxjs
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'thx-chat-stats',
   standalone: true,
-  imports: [ MaterialModule, RadarComponent ],
+  imports: [
+    MaterialModule,
+    RadarComponent,
+    ConsoleComponent
+  ],
   templateUrl: './chat-stats.component.html',
   styleUrl: './chat-stats.component.scss'
 })
@@ -93,15 +98,17 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.chatService.options.user && this.forRoomId) {
       this.user = this.chatService.options.user;
       this.chatStatsSocketService.login(this.user);
-      this.enterRoomSub = this.chatStatsSocketService.enterRoom(this.forRoomId).subscribe({
-        next: (room: Room) => {
-          this.room = room;
-          this.enterRoomSub.unsubscribe();
-          // send test object
-          setTimeout(() => {
-            this.chatStatsSocketService.sendMessage({test: 'OK', user: this.user.nickname}, this.room.id);
-          }, 2000);
-          
+      this.enterRoomSub = this.chatStatsSocketService.subscribeRoom(this.forRoomId).subscribe({
+        next: (room: Room | null) => {
+          if (room) {
+            this.room = room;
+            this.enterRoomSub.unsubscribe();
+            // send test object
+            setTimeout(() => {
+              // this.chatStatsSocketService.sendMessage({test: 'OK', user: this.user.nickname}, this.room.id);
+            }, 2000);
+          }
+          // else do nothing
         }
       });
 

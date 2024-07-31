@@ -1,9 +1,12 @@
 import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
-import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { Message } from '@thx/socket';
 import { MaterialModule } from '../../modules/material/material.module';
 import { EmojiComponent } from '../emoji/emoji.component';
+import { ChatService } from '../../services/chat/chat.service';
+
+
+const SEND_MESSAGE_DELAY: number = 1500;
 
 @Component({
   selector: 'thx-message-input',
@@ -12,6 +15,7 @@ import { EmojiComponent } from '../emoji/emoji.component';
   templateUrl: './message-input.component.html',
   styleUrl: './message-input.component.scss'
 })
+
 export class MessageInputComponent implements OnInit {
 
   @Input('roomId') roomId!: string;
@@ -23,23 +27,33 @@ export class MessageInputComponent implements OnInit {
   });
 
   showEmoji: boolean = false;
+  canSendMessage: boolean = false;
+  lastMessageSent: number = 0;
+  
 
   constructor(
-    private chatSocketService: ChatSocketService
+    private chatService: ChatService
   ) {}
 
   ngOnInit(): void {
-    console.log('input color?', this.color);
+    // console.log('input color?', this.color);
+
   }
 
   sendMessage(): void {
     if (this.roomId) {
-      this.showEmoji = false;
-      console.log('form value', this.sendMessageForm.value);
-      const message = this.chatSocketService.sendMessage(this.sendMessageForm.value.message, this.roomId);
-      this.onMessage.next(message);
-      // this.messages.push(message); // show my own message
-      this.sendMessageForm.reset();
+      if (this.lastMessageSent === 0 || performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY) {
+        this.showEmoji = false;
+        console.log('SEND MESSAGE - LAST M SENT?', this.lastMessageSent);
+        console.log('performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY', performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY);
+        const message = this.chatService.sendMessage(this.sendMessageForm.value.message, this.roomId);
+        this.onMessage.next(message);
+        // this.messages.push(message); // show my own message
+        this.sendMessageForm.reset();
+        this.lastMessageSent = performance.now();
+      } else {
+        console.warn('too fast baybe ;)');
+      }      
     }
   }
 

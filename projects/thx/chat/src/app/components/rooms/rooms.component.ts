@@ -3,6 +3,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 // material
 import { MaterialModule } from '../../modules/material/material.module';
+import { MatBottomSheet, MatBottomSheetRef } from '@angular/material/bottom-sheet';
+// components
+import { SubscribedRoomsMenuComponent } from '../subscribed-rooms-menu/subscribed-rooms-menu.component';
 // form
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 // services
@@ -34,7 +37,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     roomName: new FormControl('', Validators.required),
     password: new FormControl(''),
     timer: new FormControl(0),
-    public: new FormControl(true)
+    public: new FormControl(false)
   });
 
   searchRoomControl: FormControl = new FormControl('');
@@ -57,9 +60,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
 
   constructor(
-    private chatSocketService: ChatSocketService,
+    // private chatSocketService: ChatSocketService,
     private chatService: ChatService,
-    private router: Router
+    private router: Router,
+    private bottomSheet: MatBottomSheet
   ) {}
 
   
@@ -67,7 +71,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     console.log('-----rooms init-----');
     // this.socketConnected = this.chatSocketService.connected;
-    this.onSocketConnectionChange = this.chatSocketService.connected.subscribe({
+    this.onSocketConnectionChange = this.chatService.connected.subscribe({
       next: (connected: boolean) => {
         this.socketConnected = connected;
         console.log('connected?', connected);
@@ -78,19 +82,19 @@ export class RoomsComponent implements OnInit, OnDestroy {
       startWith(''),
       map(value => this._filter(value || '')),
     );
-    this.chatSocketService.getAvailableRooms();
-    if (!this.chatSocketService.user) {
+    this.chatService.getAvailableRooms();
+    if (!this.chatService.user) {
       console.warn('NO USER? :(');
       // this.nickname = this.animalService.getRandomAnimal();
       // // this.chatMqttService.nickname = this.nickname;
       // console.log('set nickname', this.nickname);
       // this.chatSocketService.setUserNickname(this.nickname);
     } else {
-      this.user = this.chatSocketService.user;
+      this.user = this.chatService.user;
     }
     
 
-    this.onNewRoomSub = this.chatSocketService.onNewRoom.subscribe({
+    this.onNewRoomSub = this.chatService.onNewRoom.subscribe({
       next: (room: Room) => {
         console.log('new public room created by someone', room);
         this.availableRooms.push(room);
@@ -98,7 +102,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
 
-    this.onAvailableRoomsSub = this.chatSocketService.onAvailableRooms.subscribe({
+    this.onAvailableRoomsSub = this.chatService.onAvailableRooms.subscribe({
       next: (rooms: Room[]) => {
         console.log('available rooms', rooms);
         if (rooms && rooms.length) {
@@ -109,7 +113,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
 
-    this.onRoomClosedSub = this.chatSocketService.onRoomClosed.subscribe({
+    this.onRoomClosedSub = this.chatService.onRoomClosed.subscribe({
       next: (roomId: string) => {
         console.log('room closed', roomId);
         for (let i = 0; i < this.availableRooms.length; i++) {
@@ -123,9 +127,9 @@ export class RoomsComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
 
-    this.onPublicRoomClosedSub = this.chatSocketService.onPublicRoomClosed.subscribe({
+    this.onPublicRoomClosedSub = this.chatService.onPublicRoomClosed.subscribe({
       next: (roomId: string) => {
-        if (this.chatService.isMyRoom(roomId)) this.chatService.removeMyRoom(roomId);
+        if (this.chatService.isRoomSubscribed(roomId)) this.chatService.unsubscribeRoom(roomId);
         for (let i = 0; i < this.availableRooms.length; i++) {
           const room = this.availableRooms[i];
           if (room.id === roomId) {
@@ -137,7 +141,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
 
-    this.onPublicRoomUpdatedSub = this.chatSocketService.onPublicRoomUpdated.subscribe({
+    this.onPublicRoomUpdatedSub = this.chatService.onPublicRoomUpdated.subscribe({
       next: (room: Room) => {
         console.log('public room updated', room);
         for (let i = 0; i < this.availableRooms.length; i++) {
@@ -160,6 +164,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onPublicRoomClosedSub.unsubscribe();
     this.onPublicRoomUpdatedSub.unsubscribe();
     this.onSocketConnectionChange.unsubscribe();
+  }
+
+  openBottomSheet(): void {
+    this.bottomSheet.open(SubscribedRoomsMenuComponent);
   }
 
   private _filter(value: string): Room[] {
@@ -186,12 +194,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
       console.error('check form');
       return;
     }
-    if (this.socketConnected && this.chatSocketService.user) {
-      this.createRoomSub = this.chatSocketService.createRoom(this.roomForm.value).subscribe({
+    if (this.socketConnected && this.chatService.user) {
+      this.createRoomSub = this.chatService.createAndSubscribeRoom(this.roomForm.value).subscribe({
         next: (room: Room) => {
           console.log('new room created by me', room);
-          this.chatService.addMyRoom(room.id);
-          this.chatSocketService.join(room);
           this.createRoomSub.unsubscribe();
           this.roomForm.reset();
           this.router.navigate([`/chat/${room.id}`]);
@@ -201,6 +207,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
     } else {
       console.error('cannot connect to socket');
     }
+  }
+
+  getSubscribedRooms(): Room[] {
+    return this.chatService.getSubscribedRooms();
   }
 
   log(key: any, value: any): void {

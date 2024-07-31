@@ -22,45 +22,10 @@ export class ChatStatsSocketService extends SocketService {
     this.connect();
   }
 
-  enterRoom(roomId: string): Subject<Room> {
-    const subject: Subject<any> = new Subject();
+  subscribeRoom(roomId: string): Subject<Room | null> {
+    // const subject: Subject<any> = new Subject();
     const statsRoomId: string = `${this.appName}-${roomId}`;
-    // if room exist, join, else create
-    const roomExistSub: Subscription = this.roomExist(statsRoomId).subscribe({
-      next: (exist: boolean) => {
-        if (exist) {
-          const joinSub: Subscription = this.joinRoom(statsRoomId).subscribe({
-            next: (room: Room | null) => {
-              if (room) {
-                subject.next(room);
-                subject.complete();
-                this.requestHandshake(room.id);
-              } else {
-                console.error('Something bad happend :/');
-              }
-              joinSub.unsubscribe();
-            }
-          })
-        } else { // create new room
-          const config: RoomConfig = {
-            roomName: statsRoomId, // not necessary user readible
-            password: '',
-            timer: 0,
-            public: false // always private for stats
-          }
-          const createSub: Subscription = this.createRoom(config, statsRoomId).subscribe({
-            next: (room: Room) => {
-              subject.next(room);
-              subject.complete();
-              createSub.unsubscribe();
-            }
-          })
-        }
-        roomExistSub.unsubscribe();
-      }
-    })
-
-    return subject;
+    return this.enterRoom(statsRoomId, statsRoomId);
   }
   
   touchPipe(e: TouchEvent): void {

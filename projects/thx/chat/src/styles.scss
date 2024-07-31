@@ -143,20 +143,26 @@ thx-research-info {
 }
 
 thx-rooms {
-    padding: $space;
-    padding-bottom: calc(3 * $space);
+    // padding: $space;
+    // padding-bottom: calc(3 * $space);
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+    overflow: hidden;
+    overflow-y: scroll;
+    // min-height: 100%;
+    padding: $space;
 
     .welcome {
         display: flex;
         flex-direction: row;
         justify-items: center;
         justify-content: center;
+        position: sticky;
+        top: $space;
         h3 {
             margin: 0;
         }
@@ -187,7 +193,8 @@ thx-rooms {
         justify-content: space-around;
 
         button[type=submit] {
-            margin-top: calc(2 * $space);
+            margin-top: calc($space / 2);
+            margin-bottom: $space;
         }
     }
 }
@@ -234,11 +241,13 @@ thx-room {
 
     .chat-messages {
         overflow: hidden;
+        overflow-y: scroll;
         height: 60%;
         width: 100%;
         display: flex;
         flex-direction: column;
         align-items: start;
+        // min-height: 60%;
         .my-message {
             margin-left: auto;
         }
@@ -340,7 +349,7 @@ thx-message-input {
             position: absolute;
             right: 24%;
             // opacity: .5;
-            z-index: 9999;
+            // z-index: 9999;
             // cursor: pointer;
             &::before {
                 display: block;

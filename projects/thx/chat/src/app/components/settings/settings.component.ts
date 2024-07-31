@@ -41,7 +41,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private chatService: ChatService,
     private emojiService: EmojiService,
     private colorService: ColorService,
-    private chatSocketService: ChatSocketService,
+   //  private chatSocketService: ChatSocketService,
     private router: Router,
     private location: Location
   ) {}
@@ -126,8 +126,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // save options
     this.chatService.saveOptions(options);
     // set user color and nickname
-    this.chatSocketService.user.color = options.user?.color;
-    this.chatSocketService.user.nickname = options.user ? options.user.nickname : this.chatSocketService.user.nickname;
+    this.chatService.user.color = options.user?.color;
+    this.chatService.user.nickname = options.user ? options.user.nickname : this.chatService.user.nickname;
     // select voice on voiceOverService
     if (options.voiceOverOptions.language) {
       const lang = options.voiceOverOptions.language;

@@ -6,7 +6,7 @@ import * as forge from 'node-forge';
 // uuid
 import { v4 as uuidv4 } from 'uuid';
 // rxjs
-import { Subject, BehaviorSubject } from 'rxjs';
+import { Subject, BehaviorSubject, Subscription } from 'rxjs';
 
 let HOST: string, PORT: number, USE_ENCRYPTION: boolean, PATH: string;
 
@@ -128,6 +128,7 @@ export class SocketService {
   public onMessage: Subject<RoomMessage> = new Subject();
   public onPublicRoomClosed: Subject<string> = new Subject();
   public onPublicRoomUpdated: Subject<Room> = new Subject();
+  public onError: Subject<ErrorEvent | Error> = new Subject(); 
 
   constructor() {
     if (HOST) this.socketHost = HOST;
@@ -205,12 +206,61 @@ export class SocketService {
     this.socket.emit('get_available_rooms');
   }
 
+  enterRoom(roomId: string, roomName?: string): Subject<Room | null> {
+    const subject: Subject<any> = new Subject();
+    // const statsRoomId: string = `${this.appName}-${roomId}`;
+    // if room exist, join, else create
+    const roomExistSub: Subscription = this.roomExist(roomId).subscribe({
+      next: (exist: boolean) => {
+        if (exist) {
+          const joinSub: Subscription = this.joinRoom(roomId).subscribe({
+            next: (room: Room | null) => {
+              if (room) {
+                subject.next(room);
+                subject.complete();
+                this.requestHandshake(room.id);
+              } else {
+                console.error('Something bad happend :/');
+              }
+              joinSub.unsubscribe();
+            },
+            error: (e: ErrorEvent) => this.onError.next(e)
+          })
+        } else { 
+          if (roomName) { // create new room
+            const config: RoomConfig = {
+              roomName: roomName, // not necessary user readible
+              password: '',
+              timer: 0,
+              public: false // always private for stats
+            }
+            const createSub: Subscription = this.createRoom(config, roomId).subscribe({
+              next: (room: Room) => {
+                subject.next(room);
+                subject.complete();
+                createSub.unsubscribe();
+              }
+            })
+          } else { // no existing room with roomId
+            subject.next(null);
+            subject.complete();
+          }
+        }
+        roomExistSub.unsubscribe();
+      },
+      error: (e: ErrorEvent) => this.onError.next(e)
+    })
+
+    return subject;
+  }
+
   // disconnect(): void {
   //   console.log('disconnecting user', this.user);
   //   this.socket.emit('close', this.user.id);
   // }
 
   createRoom(roomConfig: RoomConfig, roomId?: string): Subject<Room> {
+    console.log('createRoom socket.service');
     const subject: Subject<any> = new Subject();
     const room: Room = {
       id: roomId ? roomId : uuidv4(),
@@ -234,7 +284,7 @@ export class SocketService {
       if (result.success && result.data) {
         subject.next(result.data);
       } else {
-        subject.next(null);
+        this.onError.next(new Error(result.message))
       }
     });
     return subject;

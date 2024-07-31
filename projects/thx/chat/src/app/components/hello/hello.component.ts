@@ -26,13 +26,13 @@ export class HelloComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private chatSocketService: ChatSocketService,
+    // private chatSocketService: ChatSocketService,
     private chatService: ChatService
   ){}
 
   ngOnInit(): void {
     console.log('>>>>> hello init...');
-    this.certSub = this.chatSocketService.onCertGenerated.subscribe({
+    this.certSub = this.chatService.onCertGenerated.subscribe({
       next: (done: boolean) => {
         if (done) {
           console.log('certificate generated');

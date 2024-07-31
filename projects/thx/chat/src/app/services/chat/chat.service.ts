@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { User } from '@thx/socket';
+import { User, Room, RoomConfig, RoomMessage } from '@thx/socket';
+import { Subject, Subscription } from 'rxjs';
+import { ChatSocketService } from '../chat-socket/chat-socket.service';
 
 interface VoiceOverOptions {
   [key: string]: any,
@@ -22,13 +24,15 @@ const CHAT_OPTIONS_STORAGE_NAME: string = 'thx-chat-options';
 @Injectable({
   providedIn: 'root'
 })
-export class ChatService {
+export class ChatService extends ChatSocketService {
 
   options!: ChatOptions;
   inRoom!: string;
-  private myRooms: string[] = [];
+  private subscribedRooms: Room[] = [];
 
-  constructor() {
+  constructor(
+  ) {
+    super();
     this.options = this.getOptions();
   }
 
@@ -65,24 +69,106 @@ export class ChatService {
   }
 
   // TODO
-  // this should be moved to @thx/socket, as well as a logic with available public rooms
-  addMyRoom(roomId: string): void {
-    this.myRooms.push(roomId);
+  
+  createAndSubscribeRoom(roomConfig: RoomConfig, roomId?: string): Subject<Room> {
+    console.log('createRoom chat.service', roomConfig);
+    const subject: Subject<Room> = new Subject();
+    const createSub: Subscription = this.createRoom(roomConfig, roomId).subscribe({
+      next: (room: Room) => {
+        this.addRoomToSubscribed(room);
+        subject.next(room);
+        subject.complete();
+        createSub.unsubscribe();
+      },
+      error: (e: any) => {
+        subject.error(e);
+        subject.complete();
+        createSub.unsubscribe();
+      }
+    });
+
+    return subject;
   }
 
-  isMyRoom(roomId: string): boolean {
-    if (this.myRooms.includes(roomId)) return true;
+  
+  
+  subscribeRoom(roomId: string): Subject<Room | null> {
+    // if room already subscribed
+    const subject: Subject<Room | null> = new Subject();
+
+    const subSub: Subscription = this.enterRoom(roomId).subscribe({
+      next: (room: Room | null) => {
+        if (room) {
+          this.addRoomToSubscribed(room);
+        }
+        subject.next(room);
+        subject.complete();
+        subSub.unsubscribe();
+      },
+      error: (e: any) => {
+        console.error(e);
+        subject.error(e);
+        subject.complete();
+        subSub.unsubscribe();
+      }
+    });
+
+    return subject;
+
+  }
+
+  addRoomToSubscribed(room: Room): void {
+    // add to options
+    if (!this.options.subscribedRooms.includes(room.id)) {
+      this.options.subscribedRooms.push(room.id);
+      this.updateOptions();
+    }
+    // if already in subscribed, just return
+    for (const r of this.subscribedRooms) {
+      if (r.id === room.id) return;
+    }
+    // push to subscribed rooms
+    this.subscribedRooms.push(room);
+          
+  }
+
+  isRoomSubscribed(roomId: string): boolean {
+    for (const room of this.subscribedRooms) {
+      if (room.id === roomId) {
+        return true;
+      }
+    }
     return false;
   }
 
-  removeMyRoom(roomId: string): void {
-    for (let i = 0; i < this.myRooms.length; i++) {
-      const id = this.myRooms[i];
-      if (id === roomId) {
-        this.myRooms.splice(i, 1);
+  unsubscribeRoom(roomId: string): void {
+    for (let i = 0; i < this.subscribedRooms.length; i++) {
+      const room = this.subscribedRooms[i];
+      if (room.id === roomId) {
+        this.subscribedRooms.splice(i, 1);
         break;
       }
     }
+    // remove from options
+    for (let i = 0; i < this.options.subscribedRooms.length; i++) {
+      const id = this.options.subscribedRooms[i];
+      if (id === roomId) {
+        this.options.subscribedRooms.splice(i, 1);
+        this.updateOptions();
+        break;
+      }
+    }
+  }
+
+  getSubscribedRoom(roomId: string): Room | null {
+    for (const room of this.subscribedRooms) {
+      if (room.id === roomId) return room;
+    }
+    return null;
+  }
+
+  getSubscribedRooms(): Room[] {
+    return this.subscribedRooms;
   }
 
   setOption(name: string, value: any): void {
@@ -102,28 +188,6 @@ export class ChatService {
 
   confirmQuestion(question: string): boolean {
     return confirm(question);
-  }
-
-  subscribeRoom(subscribe: boolean, roomId: string): void {
-    // add to subscribed
-    if (subscribe) {
-      if (!this.options.subscribedRooms.includes(roomId)) this.options.subscribedRooms.push(roomId);
-    // remove from subscribed
-    } else {
-      for (let i = 0; i < this.options.subscribedRooms.length; i++) {
-        const subscribedRoomId = this.options.subscribedRooms[i];
-        if (subscribedRoomId === roomId) {
-          this.options.subscribedRooms.splice(i, 1);
-          break;
-        }
-      }
-    }
-    this.updateOptions();
-  }
-
-  isRoomSubscribedForNotifications(roomId: string): boolean {
-    if (this.options.subscribedRooms.includes(roomId)) return true;
-    return false;
   }
 
 }

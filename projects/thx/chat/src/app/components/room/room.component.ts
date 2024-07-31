@@ -7,7 +7,6 @@ import { MessageComponent } from '../message/message.component';
 import { MessageInputComponent } from '../message-input/message-input.component';
 import { ChatStatsComponent } from '../chat-stats/chat-stats.component';
 // services
-import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { AudioService } from '../../services/audio/audio.service';
 import { ChatService } from '../../services/chat/chat.service';
 // rxjs
@@ -29,7 +28,7 @@ import { Message, Room, RoomMessage, User } from '@thx/socket';
 })
 export class RoomComponent implements OnInit, OnDestroy {
 
-  room!: Room;
+  room: Room | null = null;
   user!: User;
   isAdmin: boolean = false;
 
@@ -49,13 +48,12 @@ export class RoomComponent implements OnInit, OnDestroy {
   sentMessage!: string;
 
   voiceOver: boolean = true;
-  notifications: boolean = false;
+  notifications: boolean = true;
 
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private chatSocketService: ChatSocketService,
     private audioService: AudioService,
     private chatService: ChatService
   ){}
@@ -63,7 +61,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.voiceOver = this.chatService.options.voiceOver;
     // this.messages = []; // TODO: (on router navigate) reset messages (from notification)
-    if (this.chatSocketService.user) this.user = this.chatSocketService.user;
+    if (this.chatService.user) this.user = this.chatService.user;
     // TODO: REFACTOR
     this.routeSub = this.route.params.subscribe({
       next: (params: any) => {
@@ -71,57 +69,33 @@ export class RoomComponent implements OnInit, OnDestroy {
         if (params.roomId) {
           const roomId = params.roomId;
           this.chatService.inRoom = roomId;
-          this.notifications = this.chatService.isRoomSubscribedForNotifications(roomId);
-          this.room = this.chatSocketService.getRoom(roomId);
-          // console.log('room', this.room);
-          this.roomExistSub = this.chatSocketService.roomExist(roomId).subscribe({
-            next: (roomExist: boolean) => {
-              // console.log('roomExist?', roomExist);
-              if (roomExist) {
-                if (this.room && this.user) this.roomEstablished.next(true);
-                // room exist and im not joined
-                // console.log('isRoomJoined?', this.chatSocketService.isRoomJoined(roomId));
-                if (!this.chatSocketService.isRoomJoined(roomId)) {
-                  // console.log('im not joined, should join');
-                  // if (!this.chatSocketService.user) {
-                  //   // console.log('NO USER? :(');
-                  //   // const nickname = this.animalService.getRandomAnimal();
-                  //   // this.chatSocketService.setUserNickname(nickname);
-                  //   // this.user = this.chatSocketService.user;
-                  // }
-                  
-                  // maybe wait a bit or setUserNickname with callback
-                  this.joinRoomSub = this.chatSocketService.joinRoom(roomId).subscribe({
-                    next: (room: Room | null) => {
-                      if (room) {
-                        this.room = room;
-                        if (this.room && this.user) this.roomEstablished.next(true);
-                        console.log('room joined', room);
-                        this.chatSocketService.join(room);
-                        // request handshake
-                        this.chatSocketService.requestHandshake(room.id);
-                      }
-                    },
-                    error: (e: any) => console.error(e)
-                  })
+          // this.chatService.subscribeRoom(true, roomId);
+          // this.notifications = this.chatService.isRoomSubscribed(roomId);
+          // console.log('this.chatService.isRoomSubscribedForNotifications(roomId)', this.chatService.isRoomSubscribedForNotifications(roomId));
 
-                }
-              // room not exist
+          this.chatService.subscribeRoom(roomId).subscribe({
+            next: (room: Room | null) => {
+              if (room) {
+                this.room = room;
+                // this.chatService.subscribeRoom(roo)
+                this.roomEstablished.next(true);
+                this.notifications = this.chatService.isRoomSubscribed(room.id);
+                console.log('notifications', this.chatService.isRoomSubscribed(room.id));
               } else {
-                // navigate to rooms (root)
                 this.router.navigate(['/']);
               }
+              
             },
             error: (e: any) => console.error(e)
-          })
+          });          
         }
         this.routeSub.unsubscribe();
       }
     });
 
-    this.onMessageSub = this.chatSocketService.onMessage.subscribe({
+    this.onMessageSub = this.chatService.onMessage.subscribe({
       next: (result: RoomMessage) => {
-        if (result.roomId === this.room.id) { // show only relevant messages for room (exclude notifications from other rooms)
+        if (this.room && result.roomId === this.room.id) { // show only relevant messages for room (exclude notifications from other rooms)
           this.messages.push(result.message);
           this.recievedMessage = result.message.id;
           this.playSoundIn();
@@ -130,12 +104,12 @@ export class RoomComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
 
-    this.onRoomClosed = this.chatSocketService.onRoomClosed.subscribe({
+    this.onRoomClosed = this.chatService.onRoomClosed.subscribe({
       next: (roomId: string) => {
         if (this.room && this.room.id === roomId) {
-          this.chatSocketService.leaveRoom(roomId);
+          this.chatService.leaveRoom(roomId);
           // remove from my rooms
-          if (this.chatService.isMyRoom(roomId)) this.chatService.removeMyRoom(roomId);
+          if (this.chatService.isRoomSubscribed(roomId)) this.chatService.unsubscribeRoom(roomId);
           const localMessage: Message = new Message(
             this.user,
             $localize `🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`,
@@ -154,7 +128,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.onRoomEstablishedSub = this.roomEstablished.subscribe({
       next: (established: boolean) => {
         if (established) {
-          if (this.room.admin === this.user.id) this.isAdmin = true;
+          if (this.room && this.room.admin === this.user.id) this.isAdmin = true;
           this.onRoomEstablishedSub.unsubscribe();
         }
       },
@@ -192,7 +166,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     // TODO: even if admin, leave with or without closing (let the room open)
     if (!this.notifications) {
       if (this.chatService.confirmQuestion($localize `You are going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`)) {
-        this.chatSocketService.sendByAndLeaveRoom(this.room.id);
+        if (this.room) this.chatService.sendByeAndLeaveRoom(this.room.id);
         this.router.navigate(['/chat']);
       }
     } else {
@@ -204,8 +178,8 @@ export class RoomComponent implements OnInit, OnDestroy {
   closeRoom(): void {
     // send to room
     // this.chatSocketService.sendMessage(`🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`, this.room.id);
-    if (this.chatService.confirmQuestion($localize `Would you like to close this chat? Other users will receive a message and be disconnected from the chat in a moment.`)) {
-      this.chatSocketService.closeRoom(this.room.id).subscribe({
+    if (this.room && this.chatService.confirmQuestion($localize `Would you like to close this chat? Other users will receive a message and be disconnected from the chat in a moment.`)) {
+      this.chatService.closeRoom(this.room.id).subscribe({
         next: (result: any) => {
           if (result.success) {
             console.log('room close result', result);
@@ -239,13 +213,8 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.onRoomClosed.unsubscribe();
     this.onRoomEstablishedSub.unsubscribe();
     this.chatService.inRoom = '';
-    if (this.room) {
-      // if (this.isAdmin) {
-      //   this.chatSocketService.sendMessage(`🌘 Room is closing in ${this.CLOSE_ROOM_IN / 1000}s ...`, this.room.id);
-      // }
-      if (!this.notifications) this.chatSocketService.sendByAndLeaveRoom(this.room.id);
-    }
-    
+    if (this.room) 
+    if (!this.notifications) this.chatService.sendByeAndLeaveRoom(this.room.id);
   }
 
   toggleVoiceOver(): void {
@@ -255,7 +224,12 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   toggleNotifications(): void {
     this.notifications = !this.notifications;
-    this.chatService.subscribeRoom(this.notifications, this.room.id);
+    if (this.room)
+    if (this.notifications) {
+      this.chatService.addRoomToSubscribed(this.room);
+    } else {
+      this.chatService.unsubscribeRoom(this.room.id);
+    }
   }
 
   pushMyMessage(message: Message): void {

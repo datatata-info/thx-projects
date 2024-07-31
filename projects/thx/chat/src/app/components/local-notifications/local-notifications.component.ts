@@ -2,8 +2,8 @@ import { RouterModule } from '@angular/router';
 import { Component, Input } from '@angular/core';
 import { RoomMessage } from '@thx/socket';
 import { MessageComponent } from '../message/message.component';
-import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { MaterialModule } from '../../modules/material/material.module';
+import { ChatService } from '../../services/chat/chat.service';
 
 @Component({
   selector: 'thx-local-notifications',
@@ -27,7 +27,7 @@ export class LocalNotificationsComponent {
   hiddenNotifications: RoomMessage[] = [];
 
   constructor(
-    private chatSocketService: ChatSocketService
+    private chatService: ChatService
   ) {}
 
   onExpireMessage(roomMessage: RoomMessage): void {
@@ -35,7 +35,7 @@ export class LocalNotificationsComponent {
   }
 
   getRoomName(roomId: string): string {
-    const roomName = this.chatSocketService.getRoom(roomId).config.roomName;
+    const roomName = this.chatService.getRoom(roomId).config.roomName;
     if (roomName) return roomName;
     return '';
   }
