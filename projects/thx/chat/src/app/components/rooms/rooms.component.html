@@ -10,42 +10,15 @@
 </div>
 
 @if (socketConnected) {
-    <div class="available-rooms">
-        @if(availableRooms.length) {
-            <h6 i18n>Join Public Chats</h6>
-            <div class="rooms-list">
-                
-                <!-- ROOM SEARCH -->
-                <form>
-                    <mat-form-field>
-                        <input
-                            i18n-placeholder
-                            type="text"
-                            placeholder="Search..."
-                            matInput
-                            [formControl]="searchRoomControl"
-                            [matAutocomplete]="search"
-                        >
-                        <mat-autocomplete #search (optionSelected)="onRoomSelect($event.option.value)" [displayWith]="displaySearchRoomFn">
-                            @for (room of filteredRooms | async; track room) {
-                                <mat-option [value]="room">{{room.config.roomName}}</mat-option>
-                            }
-                        </mat-autocomplete>
-                    </mat-form-field>
-                </form>
-                <!-- popular rooms TODO: order by room.size -->
-                <div class="room-buttons">
-                    @for(room of availableRooms; let i = $index; track room) {
-                        @if (i <= 2) {
-                            <button mat-stroked-button [routerLink]="room.id">{{room.config.roomName}} <small>({{room.size}})</small></button>
-                        }
-                    }
-                </div>
-            </div>        
+    <!-- SUBSCRIBED ROOMS -->
+     <div class="subscribed-rooms">
+        @if(getSubscribedRooms().length) {
+            <button mat-icon-button (click)="openBottomSheet()" color="warn" class="large">
+                <mat-icon class="material-symbols-outlined" inline="true">mark_unread_chat_alt</mat-icon>
+            </button>
         }
-        <!-- TEMP -->
-        <!-- <thx-message-input roomId="test"></thx-message-input> -->
-    </div>
+     </div>
+    <!-- CREATE NEW ROOM -->
     <form class="new-room"[formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
         <div>
             <mat-form-field>
@@ -60,6 +33,41 @@
         
         <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Enter Chat <strong>{{roomForm.value.roomName}}</strong></button>
     </form>
+    <!-- AVAILABLE PUBLIC ROOMS -->
+    <div class="available-rooms">
+        @if(availableRooms.length) {
+            <div class="rooms-list">
+                <!-- ROOM SEARCH -->
+                <form>
+                    <mat-form-field>
+                        <input
+                            i18n-placeholder
+                            type="text"
+                            placeholder="Search Public Chats..."
+                            matInput
+                            [formControl]="searchRoomControl"
+                            [matAutocomplete]="search"
+                        >
+                        <mat-autocomplete #search (optionSelected)="onRoomSelect($event.option.value)" [displayWith]="displaySearchRoomFn">
+                            @for (room of filteredRooms | async; track room) {
+                                <mat-option [value]="room">{{room.config.roomName}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </form>
+                <!-- popular rooms TODO: order by room.size -->
+                <div class="room-buttons">
+                    @for(room of availableRooms; let i = $index; track room) {
+                        @if (i < 2) {
+                            <button mat-stroked-button [routerLink]="room.id">{{room.config.roomName}} <small>({{room.size}})</small></button>
+                        }
+                    }
+                </div>
+            </div>        
+        }
+        <!-- TEMP -->
+        <!-- <thx-message-input roomId="test"></thx-message-input> -->
+    </div>
 } @else {
     <div class="warning" i18n [ngStyle]="{fontSize: 'xx-large'}">🫣</div>
 }

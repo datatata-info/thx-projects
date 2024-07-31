@@ -1,0 +1,18 @@
+@if(getSubscribedRooms().length) {
+    <mat-nav-list>
+        @for(room of getSubscribedRooms(); track room) {
+            @if(room.config.public) {
+                <a [routerLink]="['/chat', room.id]" mat-list-item (click)="closeMenu()">
+                    <span matListItemIcon><mat-icon class="material-symbols-outlined" inline="true">public</mat-icon></span>
+                    <span matListItemTitle>{{room.config.roomName}}</span>
+                </a>
+            } @else {
+                <a [routerLink]="['/chat', room.id]" mat-list-item (click)="closeMenu()">
+                    <span matListItemIcon><mat-icon color="warn" class="material-symbols-outlined" inline="true">lock</mat-icon></span>
+                    <span matListItemTitle color="warn">{{room.config.roomName}}</span>
+                </a>
+            }
+        }
+    </mat-nav-list>
+    
+}
