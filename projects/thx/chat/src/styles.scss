@@ -8,6 +8,20 @@ $dark-color2: #37474f;
 $dark-color3: #131515;
 $func-color: #c67c00;
 
+/* layers */
+.layer-0 {
+    z-index: 0;
+}
+.layer-1 {
+    z-index: 99;
+}
+.layer-2 {
+    z-index: 9999;
+}
+.layer-3 {
+    z-index: 999999;
+}
+
 $solidBorder: solid calc($space / 6) $light-color;
 
 * {
@@ -154,7 +168,7 @@ thx-rooms {
     overflow: hidden;
     overflow-y: scroll;
     // min-height: 100%;
-    padding: $space;
+    padding: 0 $space;
 
     .welcome {
         display: flex;
@@ -163,8 +177,9 @@ thx-rooms {
         justify-content: center;
         position: sticky;
         top: $space;
-        h3 {
+        h4 {
             margin: 0;
+            line-height: 1.5;
         }
     }
 
@@ -478,6 +493,11 @@ thx-settings {
         flex-direction: row;
         align-items: center;
         justify-content: start;
+        position: sticky;
+        top: -$space;
+        background-color: $dark-color;
+        @extend .layer-3;
+        margin-bottom: 0 !important;
     }
 
     form {
@@ -496,7 +516,7 @@ thx-settings {
             }
         }
         .settings-controls {
-            margin-top: calc(2 * $space);
+            margin-top: $space;
         }
     }
 }
