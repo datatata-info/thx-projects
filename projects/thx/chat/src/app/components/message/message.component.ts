@@ -16,6 +16,7 @@ import { MaterialModule } from '../../modules/material/material.module';
 import { VoiceOverService } from '../../services/voice-over/voice-over.service';
 import { ChatService } from '../../services/chat/chat.service';
 import { TimerService, TimerData } from '../../services/timer/timer.service';
+import { AudioService } from '../../services/audio/audio.service';
 // rxjs
 import { Subscription } from 'rxjs';
 
@@ -40,7 +41,8 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     private elm: ElementRef,
     private voiceOverService: VoiceOverService,
     private chatService: ChatService,
-    private timerService: TimerService
+    private timerService: TimerService,
+    private audioService: AudioService
   ){}
 
   ngOnInit(): void {
@@ -49,9 +51,19 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.message.user && this.message.user.color) {
         this.userColor = this.message.user.color;
       }
-      if (this.chatService.options.voiceOver && this.chatService.user.id !== this.message.user.id) {
-        this.voiceOverService.speak(`${this.message.user.nickname}: ${this.message.value}`);
+      if (this.chatService.user.id !== this.message.user.id) {
+        // voice over
+        if (this.chatService.options.voiceOver) {
+          const utterance = `${this.message.user.nickname}: ${this.message.value}`;
+          this.voiceOverService.speak(utterance)
+          .then(() => console.log(`${utterance} spoken...`))
+          .catch((e: any) => console.error(e));
+        }
+        // sound
+        this.playSoundIn();
       }
+      
+      
   
       this.expiryTimerSub = this.timerService.subscribeTimerWithDuration(this.message.expiry).subscribe({
         next: (data: TimerData) => {
@@ -82,11 +94,42 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.playSoundOut();
     this.expiryTimerSub.unsubscribe();
   }
 
   getExpiryPercent(): number {
     return ((this.expiresInSec * 1000) * 100) / this.message.expiry;
+  }
+
+  private playSoundIn(): void {
+    const oscillator = this.audioService.createOscilator('sine');
+    // c4, d4, e4: 261.63, 293.66, 329.63
+    if (oscillator) {
+      console.log('playSoundIn oscillator', oscillator);
+      this.audioService.setFrequency(oscillator, 220.00);
+      this.audioService.play(oscillator);
+      setTimeout(() => this.audioService.setFrequency(oscillator, 293.66), 100);
+      setTimeout(() => this.audioService.setFrequency(oscillator, 311.13), 200);
+      setTimeout(() => {
+        this.audioService.stop(oscillator);
+      }, 466);
+    }
+  }
+
+  private playSoundOut(): void {
+    const oscillator = this.audioService.createOscilator('sine');
+    // c4, d4, e4: 261.63, 293.66, 329.63
+    if (oscillator) {
+      console.log('playSoundOut oscillator', oscillator);
+      this.audioService.setFrequency(oscillator, 211.13);
+      this.audioService.play(oscillator);
+      setTimeout(() => this.audioService.setFrequency(oscillator, 193.66), 100);
+      setTimeout(() => this.audioService.setFrequency(oscillator, 120.00), 200);
+      setTimeout(() => {
+        this.audioService.stop(oscillator);
+      }, 466);
+    }
   }
 
 }

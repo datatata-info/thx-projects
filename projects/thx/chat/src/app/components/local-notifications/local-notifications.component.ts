@@ -35,8 +35,11 @@ export class LocalNotificationsComponent {
   }
 
   getRoomName(roomId: string): string {
-    const roomName = this.chatService.getRoom(roomId).config.roomName;
-    if (roomName) return roomName;
+    const room = this.chatService.getSubscribedRoom(roomId);
+    if (room) {
+      const roomName = room.config.roomName;
+      if (roomName) return roomName;
+    }
     return '';
   }
 

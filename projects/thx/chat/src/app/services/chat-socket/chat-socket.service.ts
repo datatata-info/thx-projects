@@ -8,7 +8,7 @@ import { Subscription, Subject } from 'rxjs';
 })
 export class ChatSocketService extends SocketService {
 
-  private rooms: any = {};
+  // private rooms: any = {};
   private certGenSub: Subscription = new Subscription();
 
   constructor() {
@@ -26,13 +26,17 @@ export class ChatSocketService extends SocketService {
   }
 
 
-  getRoom(roomId: string): Room {
-    return this.rooms[roomId];
-  }
+  // getRoom(roomId: string): Room {
+  //   return this.rooms[roomId];
+  // }
 
   sendByeAndLeaveRoom(roomId: string): void {
-    this.sendMessage('👋 ...leaving chat', roomId);
+    this.sendBye(roomId);
     this.leaveRoom(roomId);
+  }
+
+  private sendBye(roomId: string): void {
+    this.sendMessage('👋 ...leaving chat', roomId);
   }
 
 }

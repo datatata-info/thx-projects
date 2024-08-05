@@ -1,5 +1,5 @@
 <div class="welcome">
-    <h3 i18n [ngStyle]="{color: user.color ? user.color : 'unset'}">Welcome {{user.nickname}}</h3>
+    <h4 i18n [ngStyle]="{color: user.color ? user.color : 'unset'}">Welcome {{user.nickname}}</h4>
     <button mat-icon-button class="large" [routerLink]="['/settings']">
         <mat-icon
             color="primary"
@@ -23,7 +23,7 @@
         <div>
             <mat-form-field>
                 <mat-label i18n>Start New Chat</mat-label>
-                <input formControlName="roomName" matInput maxlength="18" placeholder="Ex. holidays in Rome" value="">
+                <input formControlName="roomName" matInput maxlength="18" placeholder="Ex. holidays in Rome" value="" autocomplete="off">
             </mat-form-field>
             
             <section>

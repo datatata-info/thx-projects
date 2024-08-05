@@ -37,7 +37,7 @@ export class TermsComponent implements AfterViewInit {
 
   acceptTerms(): void {
     this.chatService.setOption('termsApproved', true);
-    this.router.navigate(['/chat']);
+    this.router.navigate([this.chatService.lastRoute]);
   }
 
   rejectTerms(): void {

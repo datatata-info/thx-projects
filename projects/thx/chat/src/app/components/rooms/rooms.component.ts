@@ -74,7 +74,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onSocketConnectionChange = this.chatService.connected.subscribe({
       next: (connected: boolean) => {
         this.socketConnected = connected;
-        console.log('connected?', connected);
+        // console.log('connected?', connected);
       }
     });
     // console.log('chatSocketService.connected', this.chatSocketService.connected);
@@ -199,6 +199,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
         next: (room: Room) => {
           console.log('new room created by me', room);
           this.createRoomSub.unsubscribe();
+
           this.roomForm.reset();
           this.router.navigate([`/chat/${room.id}`]);
         },
@@ -210,7 +211,9 @@ export class RoomsComponent implements OnInit, OnDestroy {
   }
 
   getSubscribedRooms(): Room[] {
-    return this.chatService.getSubscribedRooms();
+    const rooms = this.chatService.getSubscribedRooms();
+    // console.log('getSubscribedRooms', rooms);
+    return rooms;
   }
 
   log(key: any, value: any): void {

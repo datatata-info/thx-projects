@@ -30,6 +30,8 @@ export class ChatService extends ChatSocketService {
   inRoom!: string;
   private subscribedRooms: Room[] = [];
 
+  lastRoute: string = '/chat';
+
   constructor(
   ) {
     super();
@@ -76,6 +78,7 @@ export class ChatService extends ChatSocketService {
     const createSub: Subscription = this.createRoom(roomConfig, roomId).subscribe({
       next: (room: Room) => {
         this.addRoomToSubscribed(room);
+        console.log('createAndSubscribeRoom ... is room subscribed?', this.isRoomSubscribed(room.id));
         subject.next(room);
         subject.complete();
         createSub.unsubscribe();

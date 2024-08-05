@@ -35,11 +35,11 @@ export class AppComponent implements OnInit, OnDestroy {
     private colorService: ColorService,
     private chatService: ChatService,
     private voiceOverService: VoiceOverService,
-    private audioService: AudioService
+    // private audioService: AudioService
   ){}
 
   ngOnInit(): void {
-    this.audioService.listenUserEventToActivateContext();
+    // this.audioService.listenUserEventToActivateContext();
     const chatOptions = this.chatService.options;
     if (chatOptions.voiceOverOptions.language) {
       const lang = chatOptions.voiceOverOptions.language;
@@ -47,9 +47,17 @@ export class AppComponent implements OnInit, OnDestroy {
       if (chatOptions.voiceOverOptions.voice) {
         const voiceName = chatOptions.voiceOverOptions.voice;
         const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, lang);
-        if (voice) this.voiceOverService.selectVoice(voice);
+        console.log('voice on start app', voice);
+        if (voice) {
+          this.voiceOverService.selectVoice(voice);
+          // console.log('selected voice', this.voiceOverService.selectedVoice);
+          // this.voiceOverService.speak($localize `Welcome ${chatOptions.user?.nickname}`);
+          this.voiceOverService.speak(`Welcome`);
+        } else {
+          this.chooseDefaultVoice();
+        }
       } else {
-        this.voiceOverService.chooseDefaultVoice();
+        this.chooseDefaultVoice();
       }
     }
     if (!chatOptions.user) {
@@ -93,5 +101,13 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // this.chatSocketService.disconnect();
     this.onMessageNotification.unsubscribe();
+  }
+
+  private chooseDefaultVoice(): void {
+    const voice = this.voiceOverService.chooseDefaultVoice();
+    if (voice) {
+      this.voiceOverService.selectVoice(voice);
+      this.chatService.options.voiceOverOptions.voice = voice.name;
+    }
   }
 }

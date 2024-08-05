@@ -10,23 +10,28 @@ import { BehaviorSubject } from 'rxjs';
 export class VoiceOverService {
 
   private synth: SpeechSynthesis = window.speechSynthesis;
-  private _voices: SpeechSynthesisVoice[] = this.synth.getVoices();
-  private selectedVoice!: SpeechSynthesisVoice | null;
+  private _voices: SpeechSynthesisVoice[] = [];
+  selectedVoice!: SpeechSynthesisVoice | null;
   selectedLanguage: string = 'en-US';
   voices: BehaviorSubject<SpeechSynthesisVoice[]> = new BehaviorSubject(this._voices);
-  // TODO: choose language EN
 
   constructor() {
     const userLang = navigator.language;
-    console.log('userLang', userLang);
+    this._voices = this.synth.getVoices();
+    console.log('navigator.language', userLang);
     // console.log('voices', this.voices);
-    if (!this._voices.length) {
+    // choose default voice based on language
+    console.log('synh?', this.synth);
+    console.log('onvoicechanged?', this.synth.onvoiceschanged);
+    console.log('voices', this._voices);
+    if (this.synth.onvoiceschanged !== undefined) { // add listener for chrome
       this.synth.addEventListener('voiceschanged', () => {
         this._voices = this.synth.getVoices();
         this.voices.next(this._voices);
         this.selectedVoice = this.chooseDefaultVoice();
       });
-    } else {
+    } else { // else select directly
+      this.voices.next(this._voices);
       this.selectedVoice = this.chooseDefaultVoice();
     }
   }
@@ -69,7 +74,7 @@ export class VoiceOverService {
 
   speak(utterance: string): Promise<any> {
     const u: SpeechSynthesisUtterance = new SpeechSynthesisUtterance(utterance);
-    // console.log('default voice', u.voice);
+    console.log('voice', this.selectedVoice);
     if (this.selectedVoice) u.voice = this.selectedVoice;
     this.synth.speak(u);
     return new Promise((resolve: any) => {

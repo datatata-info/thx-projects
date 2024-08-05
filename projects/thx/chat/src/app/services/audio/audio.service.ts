@@ -7,43 +7,50 @@ import { Injectable } from '@angular/core';
 })
 export class AudioService {
 
-  public context!: AudioContext; // = new AudioContext(); // (window.AudioContext || window.webkitAudioContext)
+  public context: AudioContext = new AudioContext(); // (window.AudioContext || window.webkitAudioContext)
   private gainNode!: GainNode;
   private volume: number = .5;
   private filter!: BiquadFilterNode;
   // private oscillatorType: string = 'sine'; // types: sine, square, sawtooth, triangle, custom
   // for frequencies of notes see https://pages.mtu.edu/~suits/notefreqs.html
   constructor() {
-    
+    console.log('AUDIO SERVICE CONSTRUCTOR context', this.context);
+    if (!this.context) {
+      this.listenUserEventToActivateContext();
+    } else {
+      this.activateContext();
+    }
   }
 
-  listenUserEventToActivateContext(): void {
+  private listenUserEventToActivateContext(): void {
     document.addEventListener('click', this.activateContext.bind(this));
     document.addEventListener('touchstart', this.activateContext.bind(this));
     document.addEventListener('keydown', this.activateContext.bind(this));
   }
 
   private activateContext(): void {
+    console.log('activateContext');
     if (!this.context) {
-      console.log('activateContext');
       this.context = new AudioContext();
-      this.gainNode = this.context.createGain();
-      this.gainNode.connect(this.context.destination);
-      this.gainNode.gain.value = this.volume;
-      this.filter = this.context.createBiquadFilter();
-      // remove listeners
-      document.removeEventListener('click', this.activateContext);
-      document.removeEventListener('touchstart', this.activateContext);
-      document.removeEventListener('keydown', this.activateContext);
     }
-    
+    this.gainNode = this.context.createGain();
+    this.gainNode.connect(this.context.destination);
+    this.gainNode.gain.value = this.volume;
+    this.filter = this.context.createBiquadFilter();
+    // remove listeners
+    document.removeEventListener('click', this.activateContext);
+    document.removeEventListener('touchstart', this.activateContext);
+    document.removeEventListener('keydown', this.activateContext);
   }
   // see at https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode/type
   // types: sine, square, sawtooth, triangle, custom
-  createOscilator(type: OscillatorType): OscillatorNode {
-    const oscillator: OscillatorNode = this.context.createOscillator();
+  createOscilator(type: OscillatorType): OscillatorNode | null {
+    // console.log('createOscilator context', this.context);
+    if (!this.context) return null;
+    const oscillator: OscillatorNode = new OscillatorNode(this.context, {type: type}); // this.context.createOscillator();
     oscillator.connect(this.gainNode);
-    oscillator.type = type;
+    // oscillator.type = type;
+    // console.log('oscillator', oscillator);
     return oscillator;
   }
 
@@ -77,9 +84,10 @@ export class AudioService {
         done();
       } else {
         this.setVolume(this.volume);
-        requestAnimationFrame(fade.bind(this));
+        requestAnimationFrame(fade);
       }
     }
+    fade();
   }
 
   fadeOut(done: any = () => {}): void  {
@@ -107,6 +115,8 @@ export class AudioService {
     // }
     // fade(); // start fade
   }
+
+
 
 
 }

@@ -11,12 +11,14 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 
 const SOCKET_SERVER_CONFIG: SocketServerConfig = {
-  // host: 'thx.ffa.vutbr.cz',
-  // path: '/socket-server',
-  // port: 443,
-  host: 'localhost',
-  path: '',
-  port: 3002,
+  // production
+  host: !isDevMode() ? 'thx.ffa.vutbr.cz' : window.location.hostname,
+  path: !isDevMode() ? '/socket-server' : '',
+  port: !isDevMode() ? 443 : 3002,
+  // development
+  // host: 'localhost',
+  // path: '',
+  // port: 3002,
   useEncryption: true
 }
 

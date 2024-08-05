@@ -46,7 +46,7 @@
         <div class="voice-over-voice">
             <mat-form-field>
                 <mat-label i18n>Voice</mat-label>
-                <mat-select formControlName="voiceOverVoice" [(value)]="settingsForm.value.voiceOverVoice">
+                <mat-select formControlName="voiceOverVoice" [(value)]="settingsForm.value.voiceOverVoice" (valueChange)="testSpeak($event)">
                     @for (voice of langVoiceList; track voice) {
                         <mat-option [value]="voice.name">{{voice.name}}</mat-option>
                     }

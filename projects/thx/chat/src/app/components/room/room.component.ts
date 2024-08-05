@@ -7,11 +7,12 @@ import { MessageComponent } from '../message/message.component';
 import { MessageInputComponent } from '../message-input/message-input.component';
 import { ChatStatsComponent } from '../chat-stats/chat-stats.component';
 // services
-import { AudioService } from '../../services/audio/audio.service';
 import { ChatService } from '../../services/chat/chat.service';
 // rxjs
 import { Subscription, Subject } from 'rxjs';
 import { Message, Room, RoomMessage, User } from '@thx/socket';
+
+const CLOSE_ROOM_IN: number = 10 * 1000;
 
 @Component({
   selector: 'thx-room',
@@ -33,14 +34,11 @@ export class RoomComponent implements OnInit, OnDestroy {
   isAdmin: boolean = false;
 
   private routeSub: Subscription = new Subscription();
-  private roomExistSub: Subscription = new Subscription();
-  private joinRoomSub: Subscription = new Subscription();
   private onMessageSub: Subscription = new Subscription();
   private onRoomClosed: Subscription = new Subscription();
   private onRoomEstablishedSub: Subscription = new Subscription();
 
   private roomEstablished: Subject<boolean> = new Subject();
-  private CLOSE_ROOM_IN: number = 10 * 1000;
 
   messages: Message[] = [];
   // for stats
@@ -54,40 +52,59 @@ export class RoomComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private audioService: AudioService,
     private chatService: ChatService
   ){}
 
   ngOnInit(): void {
+    console.warn('🚀 Room init');
     this.voiceOver = this.chatService.options.voiceOver;
     // this.messages = []; // TODO: (on router navigate) reset messages (from notification)
     if (this.chatService.user) this.user = this.chatService.user;
-    // TODO: REFACTOR
+    // subscribe for get admin
+    this.onRoomEstablishedSub = this.roomEstablished.subscribe({
+      next: (established: boolean) => {
+        console.log('🦧 roomEstablished', established);
+        if (established) {
+          if (this.room && this.room.admin === this.user.id) this.isAdmin = true;
+          this.onRoomEstablishedSub.unsubscribe();
+        }
+      },
+      error: (e: any) => console.error(e)
+    });
+    // subscribe route to get roomId
     this.routeSub = this.route.params.subscribe({
       next: (params: any) => {
         // console.log('route params', params);
         if (params.roomId) {
           const roomId = params.roomId;
           this.chatService.inRoom = roomId;
-          // this.chatService.subscribeRoom(true, roomId);
-          // this.notifications = this.chatService.isRoomSubscribed(roomId);
-          // console.log('this.chatService.isRoomSubscribedForNotifications(roomId)', this.chatService.isRoomSubscribedForNotifications(roomId));
-
-          this.chatService.subscribeRoom(roomId).subscribe({
-            next: (room: Room | null) => {
-              if (room) {
-                this.room = room;
-                // this.chatService.subscribeRoom(roo)
-                this.roomEstablished.next(true);
-                this.notifications = this.chatService.isRoomSubscribed(room.id);
-                console.log('notifications', this.chatService.isRoomSubscribed(room.id));
-              } else {
-                this.router.navigate(['/']);
-              }
-              
-            },
-            error: (e: any) => console.error(e)
-          });          
+          console.log('🐣 roomId from url', roomId);
+          // if room is not already subscirbed
+          console.log('🐊 is room subscribed?', this.chatService.isRoomSubscribed(roomId))
+          if (!this.chatService.isRoomSubscribed(roomId)) {
+            console.log('🦮 subscribe room...');
+            this.chatService.subscribeRoom(roomId).subscribe({
+              next: (room: Room | null) => {
+                console.log('...subscribed room? ♥️', room);
+                if (room) {
+                  this.room = room;
+                  // this.chatService.subscribeRoom(roo)
+                  this.roomEstablished.next(true);
+                  this.notifications = this.chatService.isRoomSubscribed(room.id);
+                  console.log('notifications', this.chatService.isRoomSubscribed(room.id));
+                } else {
+                  this.router.navigate(['/']);
+                }
+                
+              },
+              error: (e: any) => console.error(e)
+            });
+          } else {
+            console.log('room is already subscirbed...', this.chatService.isRoomSubscribed(roomId));
+            this.room = this.chatService.getSubscribedRoom(roomId);
+            this.roomEstablished.next(true);
+          }
+                    
         }
         this.routeSub.unsubscribe();
       }
@@ -98,7 +115,6 @@ export class RoomComponent implements OnInit, OnDestroy {
         if (this.room && result.roomId === this.room.id) { // show only relevant messages for room (exclude notifications from other rooms)
           this.messages.push(result.message);
           this.recievedMessage = result.message.id;
-          this.playSoundIn();
         }
       },
       error: (e: any) => console.error(e)
@@ -112,28 +128,20 @@ export class RoomComponent implements OnInit, OnDestroy {
           if (this.chatService.isRoomSubscribed(roomId)) this.chatService.unsubscribeRoom(roomId);
           const localMessage: Message = new Message(
             this.user,
-            $localize `🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`,
-            this.CLOSE_ROOM_IN
+            $localize `🌘 Chat closes in ${CLOSE_ROOM_IN / 1000} seconds.`,
+            CLOSE_ROOM_IN
           );
           this.messages.push(localMessage);
-          // console.warn(`ROOM IS CLOSING IN ${this.CLOSE_ROOM_IN / 1000}s`);
+          // navigate to root in a defined time
           setTimeout(() => {
             this.router.navigate(['/']);
-          }, this.CLOSE_ROOM_IN);
+          }, CLOSE_ROOM_IN);
         }
       },
       error: (e: any) => console.error(e)
     });
 
-    this.onRoomEstablishedSub = this.roomEstablished.subscribe({
-      next: (established: boolean) => {
-        if (established) {
-          if (this.room && this.room.admin === this.user.id) this.isAdmin = true;
-          this.onRoomEstablishedSub.unsubscribe();
-        }
-      },
-      error: (e: any) => console.error(e)
-    });
+    
 
     // this.checkMessagesExpiration();
   }
@@ -144,22 +152,14 @@ export class RoomComponent implements OnInit, OnDestroy {
       const m = this.messages[i];
       if (m.id === id) {
         this.messages.splice(i, 1);
-        this.playSoundOut();
         break;
       }
     }
   }
 
   openSettings(): void {
-    this.notifications = true;
+    this.notifications = true; // set notifications true temporary 
     this.router.navigate(['/settings']);
-    // if (!this.notifications) {
-    //   if (this.chatService.confirmQuestion($localize `You are going to leave chat. If you want to stay subscribed on messages, turn on notifications bellow.`)) {
-    //     this.router.navigate(['/settings']);
-    //   }
-    // } else {
-    //   this.router.navigate(['/settings']);
-    // }
   }
 
   leaveRoom(): void {
@@ -167,11 +167,12 @@ export class RoomComponent implements OnInit, OnDestroy {
     if (!this.notifications) {
       if (this.chatService.confirmQuestion($localize `You are going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`)) {
         if (this.room) this.chatService.sendByeAndLeaveRoom(this.room.id);
-        this.router.navigate(['/chat']);
+        // this.router.navigate(['/chat']);
       }
-    } else {
+    } /* else {
       this.router.navigate(['/chat']);
-    }
+    } */
+   this.router.navigate(['/chat']);
     
   }
 
@@ -205,16 +206,27 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    console.warn('🚀 Room destroy');
     this.messages.length = 0; // remove all messages
-    this.roomExistSub.unsubscribe();
     this.routeSub.unsubscribe();
-    this.joinRoomSub.unsubscribe();
+
     this.onMessageSub.unsubscribe();
+
     this.onRoomClosed.unsubscribe();
     this.onRoomEstablishedSub.unsubscribe();
     this.chatService.inRoom = '';
-    if (this.room) 
-    if (!this.notifications) this.chatService.sendByeAndLeaveRoom(this.room.id);
+    if (this.room) {
+      
+      if (!this.notifications) {
+        // unsubscribe room (? test what it means)
+        this.chatService.unsubscribeRoom(this.room.id);
+        this.chatService.sendByeAndLeaveRoom(this.room.id);
+      } else {
+        // this.chatService.sendBye(this.)
+      }
+    }
+    
+    
   }
 
   toggleVoiceOver(): void {
@@ -237,35 +249,5 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.sentMessage = message.id;
   }
 
-  private playSoundIn(): void {
-    const oscillator = this.audioService.createOscilator('sine');
-    // c4, d4, e4: 261.63, 293.66, 329.63
-    this.audioService.setFrequency(oscillator, 220.00);
-    this.audioService.play(oscillator);
-    setTimeout(() => this.audioService.setFrequency(oscillator, 293.66), 100);
-    setTimeout(() => this.audioService.setFrequency(oscillator, 311.13), 200);
-    setTimeout(() => {
-      this.audioService.stop(oscillator);
-      // this.audioService.stop(oscillator);
-      // this.audioService.fadeOut(() => {
-      //   this.audioService.stop(oscillator);
-      // });
-    }, 466);
-  }
-
-  private playSoundOut(): void {
-    const oscillator = this.audioService.createOscilator('sine');
-    // c4, d4, e4: 261.63, 293.66, 329.63
-    this.audioService.setFrequency(oscillator, 211.13);
-    this.audioService.play(oscillator);
-    setTimeout(() => this.audioService.setFrequency(oscillator, 193.66), 100);
-    setTimeout(() => this.audioService.setFrequency(oscillator, 120.00), 200);
-    setTimeout(() => {
-      this.audioService.stop(oscillator);
-      // this.audioService.stop(oscillator);
-      // this.audioService.fadeOut(() => {
-      //   this.audioService.stop(oscillator);
-      // });
-    }, 466);
-  }
+  
 }
