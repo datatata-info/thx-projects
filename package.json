@@ -1,11 +1,12 @@
 {
   "name": "thx-socket-client",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "start-pwa": "ng build --configuration production --project @thx/chat && http-server -p 8080 -c-1 dist/thx/chat/browser",
-    "build": "ng build",
+    "build": "ng extract-i18n --project @thx/chat && ng build --configuration production --project @thx/chat",
+    "build-push": "npm run build && cd dist/thx/build && git add -A && git commit -m 'rebuild' && git push",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
