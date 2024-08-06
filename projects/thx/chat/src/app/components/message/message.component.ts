@@ -17,6 +17,8 @@ import { VoiceOverService } from '../../services/voice-over/voice-over.service';
 import { ChatService } from '../../services/chat/chat.service';
 import { TimerService, TimerData } from '../../services/timer/timer.service';
 import { AudioService } from '../../services/audio/audio.service';
+// pipes
+import { LinkPipe } from '../../pipes/link.pipe';
 // rxjs
 import { Subscription } from 'rxjs';
 
@@ -24,7 +26,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'thx-message',
   standalone: true,
-  imports: [ MaterialModule ],
+  imports: [ MaterialModule, LinkPipe ],
   templateUrl: './message.component.html',
   styleUrl: './message.component.scss'
 })
