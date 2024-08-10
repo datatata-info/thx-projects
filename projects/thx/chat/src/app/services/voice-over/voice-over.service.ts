@@ -10,20 +10,20 @@ import { BehaviorSubject } from 'rxjs';
 export class VoiceOverService {
 
   private synth: SpeechSynthesis = window.speechSynthesis;
-  private _voices: SpeechSynthesisVoice[] = [];
+  private _voices: SpeechSynthesisVoice[] = this.synth.getVoices();
   selectedVoice!: SpeechSynthesisVoice | null;
   selectedLanguage: string = 'en-US';
   voices: BehaviorSubject<SpeechSynthesisVoice[]> = new BehaviorSubject(this._voices);
 
   constructor() {
     const userLang = navigator.language;
-    this._voices = this.synth.getVoices();
+    // this._voices = this.synth.getVoices();
     console.log('navigator.language', userLang);
     // console.log('voices', this.voices);
     // choose default voice based on language
-    console.log('synh?', this.synth);
-    console.log('onvoicechanged?', this.synth.onvoiceschanged);
-    console.log('voices', this._voices);
+    // console.log('synh?', this.synth);
+    // console.log('onvoicechanged?', this.synth.onvoiceschanged);
+    // console.log('voices', this._voices);
     if (this.synth.onvoiceschanged !== undefined) { // add listener for chrome
       this.synth.addEventListener('voiceschanged', () => {
         this._voices = this.synth.getVoices();
