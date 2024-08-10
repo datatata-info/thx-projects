@@ -150,7 +150,7 @@ thx-research-info {
         svg {
             width: 150px;
             height: auto;
-            fill: $light-color;
+            fill: $light-color2;
          }
      }
      
@@ -236,21 +236,23 @@ thx-room {
             align-items: center;
             justify-content: space-between;
             padding: calc($space / 4);
-            padding-top: calc($space / 2);
-            .leave-chat {
-                flex: 20%;
-            }
+            // padding-top: calc($space / 2);
+            // .leave-chat {
+            //     flex: 20%;
+            //     align-items: end;
+            // }
             .chat-info {
-                flex: 60%;
+                // flex: 60%;
                 text-align: center;
                 h6 {
                     margin: 0;
+                    font-size: 1.3rem;
                 }
 
             }
-            .close-chat {
-                flex: 20%
-            }
+            // .close-chat {
+            //     flex: 20%
+            // }
         }
     }
 
@@ -260,13 +262,20 @@ thx-room {
         height: 60%;
         width: 100%;
         display: flex;
-        flex-direction: column;
+        flex-direction: column-reverse;
         align-items: start;
+        /* hide scrollbar */
+        padding-right: $space; /* Increase/decrease this value for cross-browser compatibility */
+        box-sizing: content-box; /* So the width will be 100% + 17px */
+
         // min-height: 60%;
         .my-message {
             margin-left: auto;
         }
-        justify-content: end;
+        // & thx-message:first-child {
+        //     margin-top: auto !important;
+        // }
+        // justify-content: end;
     }
 
 
@@ -332,11 +341,11 @@ thx-message {
 thx-message-input {
     width: 100%;
     font-size: large;
-    
+    padding: calc($space / 2) $space;
+    display: block;
     form {
         display: flex;
-        width: 100;
-        margin: calc($space / 2) $space;
+        width: 100%;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
@@ -347,22 +356,26 @@ thx-message-input {
             border: 3px solid $light-color2;
             border-radius: 9999px;
             padding: calc($space / 2) $space;
-            padding-right: calc(2 * $space);
+            // padding-right: calc(2 * $space);
             font-size: inherit;
-            width: 80%;
+            // flex: calc(100% - (2.2 * $space));
+            width: calc(100% - (2.2 * $space));
             &:active, &:focus {
                 outline: none;
             }
         }
         .mat-mdc-icon-button {
             color: $light-color2;
+            width: calc(2.2 * $space);
+            display: flex;
+            justify-content: end;
         }
         .mat-icon.emoji {
             font-size: calc(1.5 * $space);
             width: calc(2 * $space);
             height: calc(2 * $space);
             position: absolute;
-            right: 24%;
+            right: calc(3.3 * $space);
             // opacity: .5;
             // z-index: 9999;
             // cursor: pointer;
@@ -384,9 +397,9 @@ thx-message-input {
 thx-emoji {
     display: block;
     width: 100%;
-    height: 75%;
+    height: calc(100% - (6.5 * $space));
     position: absolute;
-    top: 0;
+    bottom: calc(6.5 * $space);
     left: 0;
     padding: calc($space / 2);
     z-index: 9999999;
@@ -398,9 +411,9 @@ thx-emoji {
         position: absolute;
         bottom: 0;
         width: calc(100% - $space);
-        max-height: 60%;
+        // max-height: 60%;
         overflow: hidden;
-        height: 100%;
+        height: calc(100% - ($space / 2));
         overflow-y: scroll;
         .emoji-list {
             margin: calc($space / 3);

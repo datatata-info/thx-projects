@@ -28,6 +28,10 @@
                         <button class="large" mat-icon-button (click)="closeRoom()">
                             <mat-icon color="accent" class="material-symbols-outlined" inline="true">close</mat-icon>
                         </button>
+                    } @else {
+                        <button class="large" mat-icon-button (click)="unsubscribeRoom()">
+                            <mat-icon color="primary" class="material-symbols-outlined" inline="true">close</mat-icon>
+                        </button>
                     }
                 </div>
             </div>

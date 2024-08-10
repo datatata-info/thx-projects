@@ -113,7 +113,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.onMessageSub = this.chatService.onMessage.subscribe({
       next: (result: RoomMessage) => {
         if (this.room && result.roomId === this.room.id) { // show only relevant messages for room (exclude notifications from other rooms)
-          this.messages.push(result.message);
+          this.messages.unshift(result.message);
           this.recievedMessage = result.message.id;
         }
       },
@@ -131,7 +131,7 @@ export class RoomComponent implements OnInit, OnDestroy {
             $localize `🌘 Chat closes in ${CLOSE_ROOM_IN / 1000} seconds.`,
             CLOSE_ROOM_IN
           );
-          this.messages.push(localMessage);
+          this.messages.unshift(localMessage);
           // navigate to root in a defined time
           setTimeout(() => {
             this.router.navigate(['/']);
@@ -174,6 +174,17 @@ export class RoomComponent implements OnInit, OnDestroy {
     } */
    this.router.navigate(['/chat']);
     
+  }
+
+  unsubscribeRoom(): void{
+    if (this.room) {
+      if (this.chatService.confirmQuestion($localize `You are about to leave the chat permanently. If you want to stay subscribed and receive notifications, use the arrow on the left.`)) {
+        this.chatService.unsubscribeRoom(this.room.id);
+        this.notifications = false;
+        this.chatService.sendByeAndLeaveRoom(this.room.id);
+        this.router.navigate(['/chat']);
+      }
+    }
   }
 
   closeRoom(): void {
@@ -245,7 +256,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   pushMyMessage(message: Message): void {
-    this.messages.push(message);
+    this.messages.unshift(message);
     this.sentMessage = message.id;
   }
 
