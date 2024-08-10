@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "start-pwa": "ng build --configuration production --project @thx/chat && http-server -p 8080 -c-1 dist/thx/chat/browser",
+    "start-pwa": "ng build --configuration production --project @thx/chat && http-server --ssl --cert '/Library/WebServer/Documents/dev/projects/thx/certs/cert.pem' --key '/Library/WebServer/Documents/dev/projects/thx/certs/key.pem' -p 8080 -c-1 dist/thx/build/chat/browser/",
     "build": "ng extract-i18n --project @thx/chat && ng build --configuration production --project @thx/chat",
     "build-push": "npm run build && cd dist/thx/build && git add -A && git commit -m 'rebuild' && git push",
     "watch": "ng build --watch --configuration development",
@@ -36,6 +36,7 @@
     "@angular-devkit/build-angular": "^18.1.1",
     "@angular/cli": "^18.1.1",
     "@angular/compiler-cli": "^18.1.0",
+    "@types/d3": "^7.4.3",
     "@types/jasmine": "~5.1.0",
     "@types/node-forge": "^1.3.11",
     "@types/uuid": "^10.0.0",

@@ -8,31 +8,8 @@
     // height: auto;
     position: relative;
     .radar {
-        position: absolute;
-        top: 50%;
         width: 100%;
         height: 100%;
-        .axe-container {
-            // position: absolute;
-            // top: 50%;
-            // left: 50%;
-            transform-origin: center center;
-            .axe {
-                width: 100%;
-                height: 2px;
-                position: absolute;
-                // top: 50%;
-                // transform: translateY(50%);
-                 
-            }
-            .value-pointer {
-                width: 12px;
-                height: 12px;
-                border-radius: 12px;
-                position: absolute;
-                top: 50%;
-            }
-        }
     }
     
     
