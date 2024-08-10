@@ -26,7 +26,7 @@ export class ConsoleComponent {
   proxy(context: any, method: any, message: string) { 
     return () => {
       const apply = method.apply(context, [message].concat(Array.prototype.slice.apply(arguments)));
-      console.log('console context', context);
+      // console.log('console context', context);
       return apply;
     }
   }
