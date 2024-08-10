@@ -26,48 +26,70 @@ const CHAT_OPTIONS_STORAGE_NAME: string = 'thx-chat-options';
 })
 export class ChatService extends ChatSocketService {
 
-  options!: ChatOptions;
+  private defaultOptions: ChatOptions = {
+    user: undefined,
+    subscribedRooms: [],
+    voiceOver: true,
+    voiceOverOptions: {
+      language: 'en-US',
+      voice: ''
+    },
+    termsApproved: false,
+    termsRevision: 0
+  }
+
+  // options!: ChatOptions;
+  // private _options: ChatOptions = this.defaultOptions;
+  options: ChatOptions = this.defaultOptions;
   inRoom!: string;
   private subscribedRooms: Room[] = [];
+
+  // get options(): ChatOptions {
+  //   // console.log('get options');
+  //   const optionsFromStorage: string | null = localStorage.getItem(CHAT_OPTIONS_STORAGE_NAME)
+  //   if (optionsFromStorage !== null) {
+  //     const options: ChatOptions = JSON.parse(optionsFromStorage);
+  //     if (options.user) this.user = options.user;
+  //     console.log('get options...', options);
+  //     this._options = options;
+  //     return this._options;
+  //   }
+  //   return this._options;
+  // }
+// 
+  // set options(options: ChatOptions) {
+  //   console.log('set options', options);
+  //   if (options) {
+  //     console.log('----------> 🐙 set options', options);
+  //     this._options = options;
+  //     localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this._options));
+  //   } else {
+  //     console.log('set options, no options', options);
+  //   }
+  // }
 
   lastRoute: string = '/chat';
 
   constructor(
   ) {
     super();
-    this.options = this.getOptions();
+    this.options = this.getOptionsFromStorage();
   }
 
-  private getOptions(): ChatOptions {
-    const defaultOptions: ChatOptions = {
-      user: undefined,
-      subscribedRooms: [],
-      voiceOver: true,
-      voiceOverOptions: {
-        language: 'en-US',
-        voice: ''
-      },
-      termsApproved: false,
-      termsRevision: 0
-    }
-    const optionsFromStorage: string | null = localStorage.getItem(CHAT_OPTIONS_STORAGE_NAME)
-    if (optionsFromStorage !== null) {
-      return JSON.parse(optionsFromStorage);
-    }
-    this.updateOptions();
-    // localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(defaultOptions));
-    return defaultOptions;
+  private getOptionsFromStorage(): ChatOptions {
+    const optionsFromStorage: string | null = localStorage.getItem(CHAT_OPTIONS_STORAGE_NAME);
+    if (optionsFromStorage) return JSON.parse(optionsFromStorage);
+    return this.options;
   }
 
-  saveOptions(options: ChatOptions): void {
-    this.options = options;
-    this.updateOptions();
-  }
-
-  private updateOptions(): void {
-    if (this.options) {
-      localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
-    }
+  // private saveOptions(options: ChatOptions): void {
+  //   this.options = options;
+  //   this.updateOptions();
+  // }
+// 
+  updateOptions(options?: ChatOptions): void {
+    if (options) this.options = options;
+    localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
   }
 
   // TODO
@@ -174,19 +196,20 @@ export class ChatService extends ChatSocketService {
     return this.subscribedRooms;
   }
 
-  setOption(name: string, value: any): void {
-    this.options[name] = value;
-    this.updateOptions();
-    // localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
-  }
+  // setOption(name: string, value: any): void {
+  //   this.options[name] = value;
+  //   // this.updateOptions();
+  //   // localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
+  // }
 
-  getOption(name: string): any {
-    return this.options[name as keyof ChatOptions];
-  }
+  // getOption(name: string): any {
+  //   return this.options[name as keyof ChatOptions];
+  // }
 
   resetOptions(): void {
+    this.logout();
     localStorage.removeItem(CHAT_OPTIONS_STORAGE_NAME);
-    window.location.reload();
+    window.location.href = '/';
   }
 
   confirmQuestion(question: string): boolean {
