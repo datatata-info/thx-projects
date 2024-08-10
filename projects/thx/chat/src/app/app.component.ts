@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, isDevMode, OnDestroy, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 // services
@@ -73,13 +73,14 @@ export class AppComponent implements OnInit, OnDestroy {
       // console.log('USER WITH COLOR', this.user);
       
       // set user in chat options
-      this.chatService.setOption('user', this.user);
+      this.chatService.options.user = this.user;
+      this.chatService.updateOptions();
+      console.log('chatService.options', this.chatService.options);
     } else {
-      this.user = this.chatService.getOption('user');
+      this.user = chatOptions.user;
     }
     // login user
-    this.chatService.login(this.user);
-
+    this.chatService.login(this.user);  
     // accept terms
     // if (!chatOptions.termsApproved) {
     //   this.router.navigate(['/terms']); // no way ;)

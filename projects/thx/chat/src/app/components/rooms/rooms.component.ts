@@ -83,14 +83,14 @@ export class RoomsComponent implements OnInit, OnDestroy {
       map(value => this._filter(value || '')),
     );
     this.chatService.getAvailableRooms();
-    if (!this.chatService.user) {
+    if (!this.chatService.options.user) {
       console.warn('NO USER? :(');
       // this.nickname = this.animalService.getRandomAnimal();
       // // this.chatMqttService.nickname = this.nickname;
       // console.log('set nickname', this.nickname);
       // this.chatSocketService.setUserNickname(this.nickname);
     } else {
-      this.user = this.chatService.user;
+      this.user = this.chatService.options.user;
     }
     
 

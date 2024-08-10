@@ -11,7 +11,6 @@ import { VoiceOverService } from '../../services/voice-over/voice-over.service';
 import { ChatService, ChatOptions } from '../../services/chat/chat.service';
 import { ColorService } from '../../services/color/color.service';
 import { EmojiService } from '../../services/emoji/emoji.service';
-import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 // rxjs
 import { Subscription } from 'rxjs';
 
@@ -41,13 +40,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private chatService: ChatService,
     private emojiService: EmojiService,
     private colorService: ColorService,
-   //  private chatSocketService: ChatSocketService,
-    private router: Router,
     private location: Location
   ) {}
 
   ngOnInit(): void {
     this.chatOptions = this.chatService.options;
+
     this.settingsForm = new FormGroup({
       nickname: new FormControl(this.chatOptions.user?.nickname),
       color: new FormControl(this.chatOptions.user?.color),
@@ -59,6 +57,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     console.log('SETTINGS FORM', this.settingsForm.value);
     this.voicesSub = this.voiceOverService.voices.subscribe({
       next: (voices: SpeechSynthesisVoice[]) => {
+        console.log('voices', voices);
         if (voices && voices.length) {
           this.voiceList = voices;
           // build available lang list
@@ -72,6 +71,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
           // select with default lang
           this.setLangVoiceList(this.voiceOverService.selectedLanguage);
           // console.log('langVoiceList', this.langVoiceList); // filter by lang
+          this.voicesSub.unsubscribe();
         }
       },
       error: (e: any) => console.error(e)
@@ -135,11 +135,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
       termsApproved: formValue.termsApproved,
       termsRevision: this.chatService.options.termsRevision
     }
-    // save options
-    this.chatService.saveOptions(options);
+    
     // set user color and nickname
-    this.chatService.user.color = options.user?.color;
-    this.chatService.user.nickname = options.user ? options.user.nickname : this.chatService.user.nickname;
+    // this.chatService.user.color = options.user?.color;
+    // this.chatService.user.nickname = options.user ? options.user.nickname : this.chatService.user.nickname;
     // select voice on voiceOverService
     if (options.voiceOverOptions.language) {
       const lang = options.voiceOverOptions.language;
@@ -151,9 +150,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.voiceOverService.selectVoice(voice);
         }
       } else {
-        this.voiceOverService.chooseDefaultVoice();
+        const voice = this.voiceOverService.chooseDefaultVoice();
+        if (voice) {
+          this.voiceOverService.selectVoice(voice);
+          options.voiceOverOptions.voice = voice.name;
+        }
       }
     }
+    // save options
+    this.chatService.options = options;
+    console.log('settings options', options);
+    this.chatService.updateOptions(options);
     // this.router.navigate(['/chat']);
     this.location.back();
   }

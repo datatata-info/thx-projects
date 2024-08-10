@@ -36,12 +36,14 @@ export class TermsComponent implements AfterViewInit {
   }
 
   acceptTerms(): void {
-    this.chatService.setOption('termsApproved', true);
+    this.chatService.options.termsApproved = true;
+    this.chatService.updateOptions();
     this.router.navigate([this.chatService.lastRoute]);
   }
 
   rejectTerms(): void {
-    this.chatService.setOption('termsApproved', false);
+    this.chatService.options.termsApproved = false;
+    this.chatService.updateOptions();
     this.router.navigate(['/hello']);
   }
 
