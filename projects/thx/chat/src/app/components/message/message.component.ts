@@ -79,6 +79,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
           // console.log('message timer done');
           this.expired.next(this.message.id);
           this.expiryTimerSub.unsubscribe();
+          this.playSoundOut();
         },
         error: (e: any) => console.error(e)
       })
@@ -96,7 +97,6 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.playSoundOut();
     this.expiryTimerSub.unsubscribe();
   }
 
