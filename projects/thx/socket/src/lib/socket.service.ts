@@ -1,4 +1,6 @@
-import { Injectable, Inject, Provider, EnvironmentProviders } from '@angular/core';
+import { Injectable, inject, Provider, EnvironmentProviders, isDevMode } from '@angular/core';
+// swPush
+import { SwPush } from '@angular/service-worker';
 // socket
 import { io, Socket, Manager } from 'socket.io-client';
 // forge
@@ -6,7 +8,7 @@ import * as forge from 'node-forge';
 // uuid
 import { v4 as uuidv4 } from 'uuid';
 // rxjs
-import { Subject, BehaviorSubject, Subscription } from 'rxjs';
+import { Subject, BehaviorSubject, Subscription, Observable } from 'rxjs';
 
 let HOST: string, PORT: number, USE_ENCRYPTION: boolean, PATH: string;
 
@@ -128,9 +130,19 @@ export class SocketService {
   public onMessage: Subject<RoomMessage> = new Subject();
   public onPublicRoomClosed: Subject<string> = new Subject();
   public onPublicRoomUpdated: Subject<Room> = new Subject();
-  public onError: Subject<ErrorEvent | Error> = new Subject(); 
+  public onError: Subject<ErrorEvent | Error> = new Subject();
+  // push notifications
+  public onPush: Observable<any> = new Observable();
+  public onPushClick: Observable<any> = new Observable();
 
+  readonly VAPID_PUBLIC_KEY: string = isDevMode() ? 'BPL2xam-UTRIqHD05cG-ZZHJFSrfVaRSz2FDGFXRhGyskNBN6RnxsrzJ09Ld1v0I66dVy57fac3IJRaD6Yqx8PM' : 'BPbN6dLz-JGZunRJymbIhU5PFWeXq6hGSWD6K4e1-pgZEjHsH_llP-OXq6sXVz8eIL0L8pA6cQC10Q5M7hKayus';
+  protected swPush!: SwPush;
   constructor() {
+    this.swPush = inject(SwPush);
+    this.onPush = this.swPush.messages;
+    this.onPushClick = this.swPush.notificationClicks;
+
+    this.swPush.notificationClicks
     if (HOST) this.socketHost = HOST;
     if (PORT) this.socketPort = PORT;
     if (PATH) this.socketPath = PATH;
@@ -180,6 +192,45 @@ export class SocketService {
     });
   }
 
+  
+
+  private subscribeNotifications(): Subject<PushSubscription | null> {
+    const subject: Subject<PushSubscription | null> = new Subject();
+    console.log('........subscribeNotifications........');
+    if (this.swPush.isEnabled) {
+      this.swPush.requestSubscription({
+        serverPublicKey: this.VAPID_PUBLIC_KEY
+      })
+      .then((sub: PushSubscription) => {
+        subject.next(sub);
+        subject.complete();
+        // console.log('PushSubscription', sub.toJSON());
+        /* 
+        const keys: SubscriptionObjectKeys = {
+          auth: sub.toJSON().keys.auth,
+          p256dh: sub.toJSON().keys.p256dh
+        };
+        const subscriptionObject: SubscriptionObject = {
+          endpoint: sub.endpoint,
+          expirationTime: 0,
+          keys: keys
+        };
+        */
+
+      })
+      .catch((e: any) => {
+        subject.next(null);
+        subject.complete();
+        console.error('PushSubscribption Error', e);
+      });
+    } else {
+      console.log('notifications not enabled || isDevMode');
+      subject.next(null);
+      subject.complete();
+    }
+    return subject;
+  }
+
   connect(): void {
     let protocol = this.useEncryption ? 'https' : 'http';
     const url = `${protocol}://${this.socketHost}:${this.socketPort}`;
@@ -189,6 +240,7 @@ export class SocketService {
         "appName": this.appName
       }
     });
+    
     // console.log('socket', this.socket);
     // console.log('socket url', url);
     // this.socket = manager.socket('/');
@@ -196,10 +248,36 @@ export class SocketService {
   }
 
   login(user: User): void {
-    // if (user || this.user) {
-      this.user = user;
-      this.socket.emit('login', this.user);
-    // }
+    this.user = user;
+    console.log('login user', user);    
+    this.socket.emit('login', this.user);
+  }
+
+  logout(): void {
+    console.warn('add logout to server...');
+    this.socket.emit('logout', this.user);
+  }
+
+  requestPushNotifications(): void {
+    console.warn('subsribeNotifications for user', this.user);
+    // create swPush Subscription
+    if (!isDevMode()) {
+      const pushSub: Subscription = this.subscribeNotifications().subscribe({
+        next: (sub: PushSubscription | null) => {
+          // if subscribtion, then send with login
+          console.log('!!!!! push subsbscribtion', sub);
+          if (sub && sub.endpoint) { // no endpoint in Safari
+            console.log('request_push', 'TODO on server');
+            this.socket.emit('request_push', this.user, sub);
+          } 
+          pushSub.unsubscribe();
+        },
+        error: (e: any) => {
+          pushSub.unsubscribe();
+          console.error('PushSubscribtion Error', e);
+        }
+      })
+    } 
   }
 
   getAvailableRooms(): void {
@@ -269,6 +347,7 @@ export class SocketService {
       admin: this.user.id,
       size: 1
     }
+    // emit create_room
     this.socket.emit('create_room', room, (result: SocketCallback) => {
       if (result.success && result.data) {
         subject.next(result.data);
@@ -280,6 +359,7 @@ export class SocketService {
 
   joinRoom(roomId: string): Subject<Room | null> {
     const subject: Subject<any> = new Subject();
+    // emit join_room
     this.socket.emit('join_room', roomId, this.user, (result: SocketCallback) => {
       if (result.success && result.data) {
         subject.next(result.data);
@@ -349,6 +429,8 @@ export class SocketService {
     this.socket.emit('request_handshake', roomId, this.user.id, forge.pki.publicKeyToPem(this.keyPair.publicKey));
   }
 
+  
+
   private listenSocket(): void {
     this.socket.on('connect', () => {
       // console.log('socket connected to server', this.socket.connected);
@@ -383,8 +465,8 @@ export class SocketService {
       // console.log('user_joined_room', user.id);
     });
 
-    this.socket.on('user_leaved_room', (userId: string) => {
-      console.warn(`----- user ${userId} leaved room`);
+    this.socket.on('user_left_room', (userId: string) => {
+      console.warn(`----- user ${userId} has left the room`);
     })
 
     this.socket.on('room_closed', (roomId: string) => {
@@ -443,6 +525,8 @@ export class SocketService {
 
     });
   }
+
+  
   // http://joinme-muni.cz/data/articles/2021/06/04/60ba1ed8a3239/thx-javurek-jerabek-revize-final-format2.pdf
   // Pokud chce Bob poslat zprávu Alici, zašifruje zprávu jejím veřejným klíčem
   // (pouze Alice ji pak dokáže dešifrovat pomocí svého soukromého klíče)
