@@ -44,30 +44,6 @@ export class ChatService extends ChatSocketService {
   inRoom!: string;
   private subscribedRooms: Room[] = [];
 
-  // get options(): ChatOptions {
-  //   // console.log('get options');
-  //   const optionsFromStorage: string | null = localStorage.getItem(CHAT_OPTIONS_STORAGE_NAME)
-  //   if (optionsFromStorage !== null) {
-  //     const options: ChatOptions = JSON.parse(optionsFromStorage);
-  //     if (options.user) this.user = options.user;
-  //     console.log('get options...', options);
-  //     this._options = options;
-  //     return this._options;
-  //   }
-  //   return this._options;
-  // }
-// 
-  // set options(options: ChatOptions) {
-  //   console.log('set options', options);
-  //   if (options) {
-  //     console.log('----------> 🐙 set options', options);
-  //     this._options = options;
-  //     localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this._options));
-  //   } else {
-  //     console.log('set options, no options', options);
-  //   }
-  // }
-
   lastRoute: string = '/chat';
 
   constructor(
@@ -195,16 +171,6 @@ export class ChatService extends ChatSocketService {
   getSubscribedRooms(): Room[] {
     return this.subscribedRooms;
   }
-
-  // setOption(name: string, value: any): void {
-  //   this.options[name] = value;
-  //   // this.updateOptions();
-  //   // localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
-  // }
-
-  // getOption(name: string): any {
-  //   return this.options[name as keyof ChatOptions];
-  // }
 
   resetOptions(): void {
     this.logout();
