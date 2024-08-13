@@ -16,7 +16,7 @@ export class ChatSocketService extends SocketService {
     this.appName = 'thx-chat';
     this.connect();
     // console.log('...subscribe cert');
-    this.onCertGenerated.subscribe({
+    this.onCertPrepared.subscribe({
       next: (done: boolean) => {
         if (done) console.info('cert ready...', done)
       },
@@ -36,6 +36,7 @@ export class ChatSocketService extends SocketService {
   }
 
   private sendBye(roomId: string): void {
+    console.log('sendBye', '👋 ...leaving chat');
     this.sendMessage('👋 ...leaving chat', roomId);
   }
 

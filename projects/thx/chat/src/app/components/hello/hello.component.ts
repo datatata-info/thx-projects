@@ -6,7 +6,6 @@ import { Router, RouterModule } from '@angular/router';
 // temp
 import { RadarComponent, RadarData, MOCK_DATA } from '@thx/charts';
 // services
-import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { ChatService } from '../../services/chat/chat.service';
 // rxjs
 import { Subscription } from 'rxjs';
@@ -32,7 +31,7 @@ export class HelloComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('>>>>> hello init...');
-    this.certSub = this.chatService.onCertGenerated.subscribe({
+    this.certSub = this.chatService.onCertPrepared.subscribe({
       next: (done: boolean) => {
         if (done) {
           console.log('certificate generated');
