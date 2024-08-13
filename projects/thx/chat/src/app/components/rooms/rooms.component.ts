@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Location } from '@angular/common';
 // router
 import { Router, RouterModule } from '@angular/router';
 // material
@@ -63,7 +64,8 @@ export class RoomsComponent implements OnInit, OnDestroy {
     // private chatSocketService: ChatSocketService,
     private chatService: ChatService,
     private router: Router,
-    private bottomSheet: MatBottomSheet
+    private bottomSheet: MatBottomSheet,
+    private location: Location
   ) {}
 
   
@@ -195,6 +197,12 @@ export class RoomsComponent implements OnInit, OnDestroy {
       return;
     }
     if (this.socketConnected && this.chatService.user) {
+      // if roomName is link
+      if (this.isLink(this.roomForm.value.roomName)) {
+        window.location.href = this.roomForm.value.roomName;
+        return;
+      }
+
       this.createRoomSub = this.chatService.createAndSubscribeRoom(this.roomForm.value).subscribe({
         next: (room: Room) => {
           console.log('new room created by me', room);
@@ -220,4 +228,14 @@ export class RoomsComponent implements OnInit, OnDestroy {
     console.log(key, value);
   }
   ///
+
+  private isLink(text: string): boolean {
+    try {
+      const url = new URL(text);
+      return true;
+    } catch(e) {
+      return false;
+    }
+    return false;
+  }
 }

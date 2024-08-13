@@ -22,8 +22,8 @@
     <form class="new-room"[formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
         <div>
             <mat-form-field>
-                <mat-label i18n>Start New Chat</mat-label>
-                <input formControlName="roomName" matInput maxlength="18" placeholder="Ex. holidays in Rome" value="" autocomplete="off">
+                <mat-label i18n>Chat Title / link</mat-label>
+                <input formControlName="roomName" matInput placeholder="Ex. Holidays in Rome" value="" autocomplete="off">
             </mat-form-field>
             
             <section>
@@ -31,7 +31,7 @@
             </section>
         </div>
         
-        <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Enter Chat <strong>{{roomForm.value.roomName}}</strong></button>
+        <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Enter Chat</button>
     </form>
     <!-- AVAILABLE PUBLIC ROOMS -->
     <div class="available-rooms">
