@@ -40,26 +40,30 @@ export class MessageInputComponent implements OnInit {
 
   }
 
+  getUserNickname(): string {
+    return this.chatService.user.nickname;
+  }
+
   sendMessage(): void {
     if (this.roomId) {
       if (this.lastMessageSent === 0 || performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY) {
         this.showEmoji = false;
-        console.log('SEND MESSAGE - LAST M SENT?', this.lastMessageSent);
-        console.log('performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY', performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY);
+        // console.log('SEND MESSAGE - LAST M SENT?', this.lastMessageSent);
+        // console.log('performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY', performance.now() - this.lastMessageSent >= SEND_MESSAGE_DELAY);
         const message = this.chatService.sendMessage(this.sendMessageForm.value.message, this.roomId);
         this.onMessage.next(message);
         // this.messages.push(message); // show my own message
         this.sendMessageForm.reset();
         this.lastMessageSent = performance.now();
       } else {
-        console.warn('too fast baybe ;)');
+        console.warn('too fast baby ;)');
       }      
     }
   }
 
   toggleEmoji(): void {
     this.showEmoji = !this.showEmoji;
-    console.log('show emoji');
+    // console.log('show emoji');
   }
 
   hideEmoji(): void {
@@ -67,7 +71,7 @@ export class MessageInputComponent implements OnInit {
   }
 
   onSelectEmoji(emoji: string): void {
-    console.log('selected emoji', emoji);
+    // console.log('selected emoji', emoji);
     // add to message (TODO: check cursor position (save before to focus later)... to add on exact place)
     this.sendMessageForm.setValue({message: (this.sendMessageForm.value.message ? this.sendMessageForm.value.message : '') + ` ${emoji}`}); 
   }

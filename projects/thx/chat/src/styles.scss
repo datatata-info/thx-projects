@@ -349,13 +349,19 @@ thx-message-input {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
+        .nickname {
+            position: absolute;
+            left: calc(1.6 * $space);
+        }
         input[type=text]#message {
             background-color: $dark-color;
             color: $light-color2;
             outline-width: 0;
             border: 3px solid $light-color2;
             border-radius: 9999px;
-            padding: calc($space / 2) $space;
+            padding: calc($space / 2) calc(1.6 * $space);
+            padding-right: calc(1.8 * $space);
+            
             // padding-right: calc(2 * $space);
             font-size: inherit;
             // flex: calc(100% - (2.2 * $space));
