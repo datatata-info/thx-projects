@@ -40,47 +40,66 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // this.audioService.listenUserEventToActivateContext();
-    const chatOptions = this.chatService.options;
-    if (chatOptions.voiceOverOptions.language) {
-      const lang = chatOptions.voiceOverOptions.language;
-      this.voiceOverService.selectedLanguage = lang;
-      if (chatOptions.voiceOverOptions.voice) {
-        const voiceName = chatOptions.voiceOverOptions.voice;
-        const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, lang);
-        console.log('voice on start app', voice);
-        if (voice) {
-          this.voiceOverService.selectVoice(voice);
-          // console.log('selected voice', this.voiceOverService.selectedVoice);
-          // this.voiceOverService.speak($localize `Welcome ${chatOptions.user?.nickname}`);
-          this.voiceOverService.speak(`Welcome`);
-        } else {
-          this.chooseDefaultVoice();
+    const voicesSub: Subscription = this.voiceOverService.voices.subscribe({
+      next: (voices: SpeechSynthesisVoice[]) => {
+        if (voices.length) {
+          const chatOptions = this.chatService.options;
+          if (chatOptions.voiceOverOptions.language) {
+            const lang = chatOptions.voiceOverOptions.language;
+            this.voiceOverService.selectedLanguage = lang;
+            if (chatOptions.voiceOverOptions.voice) {
+              const voiceName = chatOptions.voiceOverOptions.voice;
+              const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, lang);
+              console.log('voice on start app', voice);
+              if (voice) {
+                this.voiceOverService.selectVoice(voice);
+              } else {
+                this.chooseDefaultVoice();
+              }
+              this.voiceOverService.speak(`Welcome`);
+              chatOptions.voiceOverOptions.voice = this.voiceOverService.selectedVoice ? this.voiceOverService.selectedVoice.name : '';
+            }
+          }
+          if (!chatOptions.user) {
+            const colors = this.colorService.generateHslaColors(
+              this.colorService.randomIntFromInterval(40, 90),
+              this.colorService.randomIntFromInterval(30, 60)
+            );
+            this.user = new User(
+              this.emojiService.getRandomAnimalNature(),
+              colors[0],
+              chatOptions.voiceOverOptions.voice
+            );
+            // CREATE AND LOGIN USER EVERY NEW SESSION
+            // console.log('USER WITH COLOR', this.user);
+
+            // set user in chat options
+            this.chatService.options.user = this.user;
+            this.chatService.updateOptions();
+            console.log('chatService.options', this.chatService.options);
+          } else {
+            this.user = chatOptions.user;
+            if (!this.user.voice) {
+              if (chatOptions.voiceOverOptions.voice) {
+                this.user.voice = chatOptions.voiceOverOptions.voice;
+              } else {
+                this.chooseDefaultVoice();
+                this.user.voice = this.voiceOverService.selectedVoice?.name;
+              }
+              this.chatService.updateOptions();
+            }
+            // this.user.voice = !this.user.voice ? this.voiceOverService.selectedVoice?.name;
+
+          }
+          // login user
+          this.chatService.login(this.user);  
+          voicesSub.unsubscribe();
         }
-      } else {
-        this.chooseDefaultVoice();
       }
-    }
-    if (!chatOptions.user) {
-      const colors = this.colorService.generateHslaColors(
-        this.colorService.randomIntFromInterval(40, 90),
-        this.colorService.randomIntFromInterval(30, 60)
-      );
-      this.user = new User(
-        this.emojiService.getRandomAnimalNature(),
-        colors[0]
-      );
-      // CREATE AND LOGIN USER EVERY NEW SESSION
-      // console.log('USER WITH COLOR', this.user);
-      
-      // set user in chat options
-      this.chatService.options.user = this.user;
-      this.chatService.updateOptions();
-      console.log('chatService.options', this.chatService.options);
-    } else {
-      this.user = chatOptions.user;
-    }
-    // login user
-    this.chatService.login(this.user);  
+    });
+
+    
+    
     // accept terms
     // if (!chatOptions.termsApproved) {
     //   this.router.navigate(['/terms']); // no way ;)
@@ -106,6 +125,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private chooseDefaultVoice(): void {
     const voice = this.voiceOverService.chooseDefaultVoice();
+    console.log('chooseDefaultVoice', voice);
     if (voice) {
       this.voiceOverService.selectVoice(voice);
       this.chatService.options.voiceOverOptions.voice = voice.name;
