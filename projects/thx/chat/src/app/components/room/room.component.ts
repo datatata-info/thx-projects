@@ -128,7 +128,9 @@ export class RoomComponent implements OnInit, OnDestroy {
           if (this.chatService.isRoomSubscribed(roomId)) this.chatService.unsubscribeRoom(roomId);
           const localMessage: Message = new Message(
             this.user,
-            $localize `🌘 Chat closes in ${CLOSE_ROOM_IN / 1000} seconds.`,
+            {
+              subject: $localize `🌘 Chat closes in ${CLOSE_ROOM_IN / 1000} seconds.`
+            },
             CLOSE_ROOM_IN
           );
           this.messages.unshift(localMessage);
@@ -166,7 +168,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     // TODO: even if admin, leave with or without closing (let the room open)
     if (!this.notifications) {
       if (this.chatService.confirmQuestion($localize `You are going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`)) {
-        if (this.room) this.chatService.sendByeAndLeaveRoom(this.room.id);
+        // if (this.room) this.chatService.sendByeAndLeaveRoom(this.room.id);
         // this.router.navigate(['/chat']);
       }
     } /* else {
@@ -181,7 +183,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       if (this.chatService.confirmQuestion($localize `You are about to leave the chat permanently. If you want to stay subscribed and receive notifications, use the arrow on the left.`)) {
         this.chatService.unsubscribeRoom(this.room.id);
         this.notifications = false;
-        this.chatService.sendByeAndLeaveRoom(this.room.id);
+        // this.chatService.sendByeAndLeaveRoom(this.room.id);
         this.router.navigate(['/chat']);
       }
     }

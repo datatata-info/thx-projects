@@ -9,7 +9,7 @@ import {
   AfterViewInit
 } from '@angular/core';
 // thx
-import { Message } from '@thx/socket';
+import { Message, MessageContent } from '@thx/socket';
 // material
 import { MaterialModule } from '../../modules/material/material.module';
 // services
@@ -39,6 +39,13 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   expiresInSec: number = this.message ? (this.message.expiry / 1000) : 0;
   userColor!: string;
 
+  get messageSubject(): string {
+    if (this.message && typeof this.message.message === 'object') {
+      return this.message.message.subject;
+    }
+    return '';
+  }
+
   constructor(
     private elm: ElementRef,
     private voiceOverService: VoiceOverService,
@@ -55,8 +62,8 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       if (this.chatService.user.id !== this.message.user.id) {
         // voice over
-        if (this.chatService.options.voiceOver) {
-          const utterance = `${this.message.user.nickname}: ${this.message.value}`;
+        if (this.chatService.options.voiceOver && this.messageSubject) {
+          const utterance = `${this.message.user.nickname}: ${this.messageSubject}`;
           this.voiceOverService.speak(utterance)
           .then(() => console.log(`${utterance} spoken...`))
           .catch((e: any) => console.error(e));
@@ -108,7 +115,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     const oscillator = this.audioService.createOscilator('sine');
     // c4, d4, e4: 261.63, 293.66, 329.63
     if (oscillator) {
-      console.log('playSoundIn oscillator', oscillator);
+      // console.log('playSoundIn oscillator', oscillator);
       this.audioService.setFrequency(oscillator, 220.00);
       this.audioService.play(oscillator);
       setTimeout(() => this.audioService.setFrequency(oscillator, 293.66), 100);
@@ -123,7 +130,7 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
     const oscillator = this.audioService.createOscilator('sine');
     // c4, d4, e4: 261.63, 293.66, 329.63
     if (oscillator) {
-      console.log('playSoundOut oscillator', oscillator);
+      // console.log('playSoundOut oscillator', oscillator);
       this.audioService.setFrequency(oscillator, 211.13);
       this.audioService.play(oscillator);
       setTimeout(() => this.audioService.setFrequency(oscillator, 193.66), 100);

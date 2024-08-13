@@ -3,7 +3,7 @@
     <div class="sent">{{message.time | date: 'hh:mm'}}</div>
 </div>
 <div class="message" [ngStyle]="{borderColor: userColor ? userColor : 'unset'}">
-    <div class="message-content" [innerHTML]="message.value | link"></div>
+    <div class="message-content" [innerHTML]="messageSubject | link"></div>
     <span class="spacer"></span>
     <div class="message-timer">
         <mat-progress-spinner

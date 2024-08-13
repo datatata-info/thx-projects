@@ -2,6 +2,8 @@
     <thx-emoji (onClose)="hideEmoji()" (selected)="onSelectEmoji($event)"></thx-emoji>
 }
 <form [formGroup]="sendMessageForm" (ngSubmit)="sendMessage()" [ngStyle]="{color: color ? color : 'unset'}">
+    <!-- TODO: show user emoji -->
+    <div class="nickname">{{getUserNickname()}}</div>
     <input
         [ngStyle]="{borderColor: color ? color : 'unset', color: color ? color : 'unset'}"
         autocomplete="off" 
@@ -11,7 +13,7 @@
         formControlName="message"
         placeholder="Message..."
         i18n-placeholder
-        maxlength="150"
+        maxlength="1500"
     >
     <mat-icon (click)="toggleEmoji()" class="emoji material-symbols-outlined" aria-hidden="false" fontIcon="mood" inline="true"></mat-icon>
     <button class="large" mat-icon-button [disabled]="!sendMessageForm.value.message" type="submit">

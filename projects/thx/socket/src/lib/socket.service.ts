@@ -1,14 +1,14 @@
-import { Injectable, inject, Provider, EnvironmentProviders, isDevMode } from '@angular/core';
+import { Injectable, inject, EnvironmentProviders, isDevMode } from '@angular/core';
 // swPush
 import { SwPush } from '@angular/service-worker';
 // socket
-import { io, Socket, Manager } from 'socket.io-client';
-// forge
-import * as forge from 'node-forge';
+import { io, Socket } from 'socket.io-client';
 // uuid
 import { v4 as uuidv4 } from 'uuid';
 // rxjs
 import { Subject, BehaviorSubject, Subscription, Observable } from 'rxjs';
+// crypto service
+import { CryptoService } from './crypto.service';
 
 let HOST: string, PORT: number, USE_ENCRYPTION: boolean, PATH: string;
 
@@ -47,25 +47,35 @@ export interface RoomConfig {
 export interface User {
   id: string,
   nickname: string,
-  color?: string
+  color?: string,
+  voice?: string
 }
 
 export class User {
   id!: string;
   nickname!: string;
   color?: string;
-  constructor(nickname: string, color?: string) {
+  voice?: string;
+
+  constructor(nickname: string, color?: string, voice?: string) {
     this.id = uuidv4();
     this.nickname = nickname;
-    this.color = color ? color : ''
+    this.color = color ? color : '';
+    if (voice) this.voice = voice;
   }
+}
+
+export interface MessageContent {
+  subject: string | any,
+  sharedSecret?: string
+  // voice?: string
 }
 
 export interface Message {
   id: string,
   user: User,
   time: Date,
-  value: string,
+  message: MessageContent | string,
   expiry: number
 }
 
@@ -73,14 +83,14 @@ export class Message {
   id!: string;
   user!: User;
   time!: Date;
-  value!: string;
+  message!: MessageContent | string;
   expiry!: number;
-  constructor(user: User, value: string, expiry?: number) {
+  constructor(user: User, message: MessageContent, expiry?: number) {
     this.id = uuidv4();
     this.time = new Date();
     this.expiry = expiry ? expiry : 60 * 1000;
     this.user = user;
-    this.value = value;
+    this.message = message;
   }
 }
 
@@ -95,34 +105,26 @@ interface SocketCallback {
   data?: any
 }
 
-interface LocalStorageCert {
-  created: number,
-  expiresAfter: number,
-  publicPem: string,
-  privatePem: string
-}
-
-
-
 @Injectable({
   providedIn: 'root'
 })
 export class SocketService {
 
-  private useEncryption: boolean = true;
-  private keyPair!: forge.pki.rsa.KeyPair;
   private socketHost: string = '0.0.0.0';
   private socketPath: string = '';
   private socketPort: number = 3001;
   private socket!: Socket;
-  private userKeys: any = {};
+
+  private useEncryption: boolean = true;
+  protected cryptoService!: CryptoService;
+  private userPublicKeys: any = {};  
 
   public appName: string = '';
   public user!: User;
   public connected: BehaviorSubject<boolean> = new BehaviorSubject(false);
-  private _connected: boolean = false;
+  // private _connected: boolean = false;
 
-  public onCertGenerated: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  public onCertPrepared: BehaviorSubject<boolean> = new BehaviorSubject(false);
   public onNewRoom: Subject<Room> = new Subject();
   public onAvailableRooms: Subject<Room[]> = new Subject();
   public onRoomClosed: Subject<string> = new Subject();
@@ -138,6 +140,7 @@ export class SocketService {
   readonly VAPID_PUBLIC_KEY: string = isDevMode() ? 'BPL2xam-UTRIqHD05cG-ZZHJFSrfVaRSz2FDGFXRhGyskNBN6RnxsrzJ09Ld1v0I66dVy57fac3IJRaD6Yqx8PM' : 'BPbN6dLz-JGZunRJymbIhU5PFWeXq6hGSWD6K4e1-pgZEjHsH_llP-OXq6sXVz8eIL0L8pA6cQC10Q5M7hKayus';
   protected swPush!: SwPush;
   constructor() {
+    this.cryptoService = inject(CryptoService);
     this.swPush = inject(SwPush);
     this.onPush = this.swPush.messages;
     this.onPushClick = this.swPush.notificationClicks;
@@ -150,46 +153,17 @@ export class SocketService {
     if (this.useEncryption) {
       // check local storage
       // console.log('appName', this.appName);
-      const savedCert = localStorage.getItem('thx-cert');
-      if (savedCert) {
-        const cert: LocalStorageCert = JSON.parse(savedCert);
-        const now = Date.now();
-        if (now >= cert.created + cert.expiresAfter) { // cert expired, generate new
-          this.generateKeyPair();
-        } else {
-          this.keyPair = {
-            publicKey: forge.pki.publicKeyFromPem(cert.publicPem),
-            privateKey: forge.pki.privateKeyFromPem(cert.privatePem)
+      const keyPairSub: Subscription = this.cryptoService.setKeyPair().subscribe({
+        next: (done: boolean) => {
+          if (done) {
+            this.onCertPrepared.next(done);
+            // this.onCertPrepared.complete();
+            // keyPairSub.unsubscribe();
           }
-          setTimeout(() => {
-            this.onCertGenerated.next(true);
-            // this.onCertGenerated.complete();
-          }, 200);
-          
-        }
-
-      } else { // generate new and save to localStorage
-        this.generateKeyPair();
-      }
+        },
+        error: (e: any) => console.error(e)
+      });
     }
-    // this.listenSocket();
-  }
-
-  private generateKeyPair(): void {
-    forge.pki.rsa.generateKeyPair({ bits: 2048, e: 0x10001 }, (error: any, keyPair: forge.pki.rsa.KeyPair) => {
-      if (error) console.error(error);
-      // console.log('keyPair generated');
-      this.keyPair = keyPair;
-      const localStorageCert: LocalStorageCert = {
-        created: Date.now(),
-        expiresAfter: 24 * 60 * 60 * 1000, // one day
-        publicPem: forge.pki.publicKeyToPem(this.keyPair.publicKey),
-        privatePem: forge.pki.privateKeyToPem(this.keyPair.privateKey)
-      }
-      this.onCertGenerated.next(true);
-      // this.onCertGenerated.complete();
-      localStorage.setItem('thx-cert', JSON.stringify(localStorageCert));
-    });
   }
 
   
@@ -244,7 +218,7 @@ export class SocketService {
     // console.log('socket', this.socket);
     // console.log('socket url', url);
     // this.socket = manager.socket('/');
-    this.listenSocket();
+    this.setupSocketListeners();
   }
 
   login(user: User): void {
@@ -296,7 +270,7 @@ export class SocketService {
               if (room) {
                 subject.next(room);
                 subject.complete();
-                this.requestHandshake(room.id);
+                this.sendHandshake(room.id);
               } else {
                 console.error('Something bad happend :/');
               }
@@ -395,54 +369,107 @@ export class SocketService {
     return subject;
   }
 
-  sendMessage(value: string | any, roomId: string): Message {
-    const v = JSON.parse(JSON.stringify(value)); // deep copy
-    console.log(`send message to roomId ${roomId}`, v);
-    const message = {
+  sendMessage(messageSubject: string | any, roomId: string, toUserId?: string, expiration: number = 60 * 1000): Message {
+    const copyMessageSubject = JSON.parse(JSON.stringify(messageSubject)); // deep copy
+    // console.log(`send message to roomId ${roomId}`, copyMessageSubject);
+    const message: Message = {
       id: uuidv4(),
       user: this.user,
       time: new Date(),
-      expiry: 60 * 1000,
-      value: v
+      expiry: expiration,
+      message: {
+        subject: copyMessageSubject
+      }
     }
     // message.value = 
     if (this.useEncryption) {
-      const messageValue = typeof value === 'string' ? encodeURIComponent(message.value) : encodeURIComponent(JSON.stringify(message.value));
-      console.log('message value', messageValue);
-      const messageValueObject: any = {};
-      for (const userId in this.userKeys) {
-        const userPublicKey = this.userKeys[userId];
-        messageValueObject[userId] = btoa(userPublicKey.encrypt(messageValue, 'RSA-OAEP'));
-        // console.log('encrypted message', messageValueObject[userId]);
+      const encodedMessageSubject = typeof copyMessageSubject === 'string' ? encodeURIComponent(copyMessageSubject) : encodeURIComponent(JSON.stringify(copyMessageSubject));
+      // console.log('encodedMessageSubject', encodedMessageSubject);
+      const userSpecificMessageSubjects: any = {};
+      for (const userId in this.userPublicKeys) {
+        // const userPublicKey = this.userPublicKeys[userId];
+        const encryptedSharedSecret = this.cryptoService.encryptSharedSecretWithCustomKey(
+          this.cryptoService.sharedSecret,
+          this.userPublicKeys[userId]
+        );
+        // console.log('sharedSecret', encryptedSharedSecret);
+        userSpecificMessageSubjects[userId] = {
+          subject: btoa(this.cryptoService.encryptMessageWithAESKey(encodedMessageSubject, this.cryptoService.sharedSecret)),
+          sharedSecret: encryptedSharedSecret
+        };
+        // console.log('encrypted message', MessageContentObject[userId]);
       }
       const encryptedMessage = JSON.parse(JSON.stringify(message)); // deep copy
-      encryptedMessage.value = JSON.stringify(messageValueObject);
+      encryptedMessage.message = JSON.stringify(userSpecificMessageSubjects);
       // console.log('send_message', encryptedMessage.value);
-      this.socket.emit('send_message', roomId, encryptedMessage);
+      if (toUserId) {
+        this.socket.emit('send_private_message', roomId, toUserId, encryptedMessage);
+      } else {
+        this.socket.emit('send_message', roomId, encryptedMessage);
+      }
+      
     } else {
-      this.socket.emit('send_message', roomId, message);
+      if (toUserId) {
+        this.socket.emit('send_private_message', roomId, toUserId, message);
+      } else {
+        this.socket.emit('send_message', roomId, message);
+      }
     }
     return message;
   }
 
-  requestHandshake(roomId: string): void {
-    this.socket.emit('request_handshake', roomId, this.user.id, forge.pki.publicKeyToPem(this.keyPair.publicKey));
+  recieveMessage(message: Message, roomId: string): void {
+    // console.log('on message', message);
+      if (this.useEncryption) {
+         // decrypt message
+        const messageObj: any = typeof message.message === 'string' ? JSON.parse(message.message) : message.message;
+        // console.log('messageObj', messageObj);
+        if (messageObj[this.user.id]) {
+          const m: MessageContent = messageObj[this.user.id];
+          const encryptedMessageContent: string = atob(m.subject);
+          // const MessageContent = this.keyPair.privateKey.decrypt(value, 'RSA-OAEP');
+          if (m.sharedSecret) {
+            const decryptedMessageContent = this.cryptoService.decryptMessageWithAESKey(
+              encryptedMessageContent,
+              this.cryptoService.decryptSharedSecret(m.sharedSecret)
+            );
+            // console.log('decrypted message', MessageContent);
+            message.message = {
+              subject: decodeURIComponent(decryptedMessageContent)
+            }
+            try {
+              message.message.subject = JSON.parse(message.message.subject);
+            } catch(e) {
+              console.log('message not json');
+            }
+            this.onMessage.next({message: message, roomId: roomId});
+          } else {
+            console.error('message sharedSecret missing :/');
+          }          
+        }
+      } else {
+        this.onMessage.next({message: message, roomId: roomId});
+      }
+  }
+
+  sendHandshake(roomId: string): void {
+    this.socket.emit('handshake', roomId, this.user.id, this.cryptoService.getPublicKeyPem());
   }
 
   
 
-  private listenSocket(): void {
+  private setupSocketListeners(): void {
     this.socket.on('connect', () => {
       // console.log('socket connected to server', this.socket.connected);
       this.connected.next(true);
-      this._connected = true;
+      // this._connected = true;
       this.getAvailableRooms();
     });
 
     this.socket.on('disconnect', () => {
       console.log('socket disconnected');
       this.connected.next(false);
-      this._connected = false; 
+      // this._connected = false; 
     });
 
     this.socket.on('reconnect', () => {
@@ -482,74 +509,31 @@ export class SocketService {
       this.onPublicRoomUpdated.next(room);
     });
 
-    // user want to join and send send publicKey
-    this.socket.on('handshake', (roomId: string, senderId: string, publicKey: any) => {
-      // console.log('on recieve handshake from sender', senderId);
-      this.userKeys[senderId] = forge.pki.publicKeyFromPem(publicKey);
-      // console.log('publicKey', this.userKeys[senderId]);
-      // every user answer by sending theris publicKey to sender
-      this.socket.emit('response_handshake', roomId, senderId, this.user.id, forge.pki.publicKeyToPem(this.keyPair.publicKey));
-    });
-    // accepting my handshake request
-    this.socket.on('accept_handshake', (roomId: string, userId: string, publicKey: any) => {
-      // console.log('accept_handshake by', userId);
-      this.userKeys[userId] = forge.pki.publicKeyFromPem(publicKey);
-      // send join message
-      // TODO: `BUG` this fire as much time as users in room are
-      // ... sending every time the handshake with all connected users where established :/
-      // possible solve: SEND MESSAGE TO SPECIFIC USER or SEND JOIN ROOM FROM DIFFERENT PLACE
-      this.sendMessage('Joined chat.', roomId);
+    // user want to join (share publicKey) and want to get encryptedSharedSecret
+    this.socket.on('handshake', (roomId: string, senderId: string, publicKeyPem: any) => {
+      // this.sendHandshake(roomId);
+      this.userPublicKeys[senderId] = publicKeyPem;
+      // console.log('recieved handshake (publicKey) from', senderId);
+      this.socket.emit(
+        'accept_handshake',
+        roomId,
+        senderId, 
+        this.user.id, 
+        this.cryptoService.getPublicKeyPem()
+      );
+      // this.socket.emit('handshake', roomId, this.user.id, this.cryptoService.getPublicKeyPem());
     });
 
+    this.socket.on('accept_handshake', (roomId: string, fromUserId: string, publicKeyPem: string) => {
+      this.userPublicKeys[fromUserId] = publicKeyPem;
+      this.sendMessage('Joined chat.', roomId, fromUserId, 5 * 1000);
+    });
+
+    // message was recieved
     this.socket.on('message', (message: Message, roomId: string) => {
-      if (this.useEncryption) {
-         // decrypt message
-        const messageObj: any = JSON.parse(message.value);
-        // console.log('messageObj', messageObj);
-        if (messageObj[this.user.id]) {
-          const value = atob(messageObj[this.user.id]);
-          const messageValue = this.keyPair.privateKey.decrypt(value, 'RSA-OAEP');
-          // console.log('decrypted message', messageValue);
-          message.value = decodeURIComponent(messageValue);
-          try {
-            message.value = JSON.parse(message.value);
-          } catch(e) {
-            console.log('message not json');
-          }
-          this.onMessage.next({message: message, roomId: roomId});
-        }
-      } else {
-        this.onMessage.next({message: message, roomId: roomId});
-      } 
-     
-
+      console.log('on message');
+      this.recieveMessage(message, roomId);
     });
   }
-
-  
   // http://joinme-muni.cz/data/articles/2021/06/04/60ba1ed8a3239/thx-javurek-jerabek-revize-final-format2.pdf
-  // Pokud chce Bob poslat zprávu Alici, zašifruje zprávu jejím veřejným klíčem
-  // (pouze Alice ji pak dokáže dešifrovat pomocí svého soukromého klíče)
-  // a zprávu podepíše svým soukromým klíčem (kdokoliv se znalostí Bobova veřejného klíče dokáže ověřit, že zpráva pochází od Boba).
-  // [...] sharedKey
-  // V případě symetrické kryptografie je nutné, aby obě komunikující strany, tedy v našem případě Alice a Bob, znaly sdílené tajemství (sdílený klíč). Pomocí tohoto klíče pak šifrují veškerou komunikaci mezi sebou navzájem.
-
-  private createValidator(str: string): string {
-    if (this.useEncryption) {
-      const md: any = forge.md.sha1.create();
-      if (str) {
-        md.update(str, 'utf8');
-      }
-      var pss = forge.pss.create({
-        md: forge.md.sha1.create(),
-        mgf: forge.mgf.mgf1.create(md.sha1.create()),
-        saltLength: 20
-        // optionally pass 'prng' with a custom PRNG implementation
-        // optionalls pass 'salt' with a forge.util.ByteBuffer w/custom salt
-      });
-      var signature = btoa(this.keyPair.privateKey.sign(md, pss));
-      return signature;
-    }
-    return '';
-  }
 }
