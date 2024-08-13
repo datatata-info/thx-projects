@@ -11,6 +11,7 @@ export class VoiceOverService {
 
   private synth: SpeechSynthesis = window.speechSynthesis;
   private _voices: SpeechSynthesisVoice[] = this.synth.getVoices();
+  // private recognition = new SpeechRecognition(); :/ not supported by firefox
   selectedVoice!: SpeechSynthesisVoice | null;
   selectedLanguage: string = 'en-US';
   voices: BehaviorSubject<SpeechSynthesisVoice[]> = new BehaviorSubject(this._voices);
@@ -18,7 +19,7 @@ export class VoiceOverService {
   constructor() {
     const userLang = navigator.language;
     // this._voices = this.synth.getVoices();
-    console.log('navigator.language', userLang);
+    // console.log('navigator.language', userLang);
     // console.log('voices', this.voices);
     // choose default voice based on language
     // console.log('synh?', this.synth);
@@ -64,9 +65,8 @@ export class VoiceOverService {
         // voice.voiceURI.includes('voice') &&
         // voice.voiceURI.includes('compact')
       ) {
-        console.log('SELECTED VOICE:', voice);
+        // console.log('SELECTED VOICE:', voice);
         return voice; // select first en-GB voice
-        break;
       }
     }
     return null;

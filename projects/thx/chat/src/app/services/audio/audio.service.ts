@@ -14,7 +14,7 @@ export class AudioService {
   // private oscillatorType: string = 'sine'; // types: sine, square, sawtooth, triangle, custom
   // for frequencies of notes see https://pages.mtu.edu/~suits/notefreqs.html
   constructor() {
-    console.log('AUDIO SERVICE CONSTRUCTOR context', this.context);
+    // console.log('AUDIO SERVICE CONSTRUCTOR context', this.context);
     if (!this.context) {
       this.listenUserEventToActivateContext();
     } else {
@@ -29,7 +29,7 @@ export class AudioService {
   }
 
   private activateContext(): void {
-    console.log('activateContext');
+    // console.log('activateContext');
     if (!this.context) {
       this.context = new AudioContext();
     }
