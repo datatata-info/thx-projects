@@ -75,7 +75,7 @@ export interface Message {
   id: string,
   user: User,
   time: Date,
-  message: MessageContent | string,
+  content: MessageContent,
   expiry: number
 }
 
@@ -83,14 +83,14 @@ export class Message {
   id!: string;
   user!: User;
   time!: Date;
-  message!: MessageContent | string;
+  content!: MessageContent;
   expiry!: number;
-  constructor(user: User, message: MessageContent, expiry?: number) {
+  constructor(user: User, content: MessageContent, expiry?: number) {
     this.id = uuidv4();
     this.time = new Date();
     this.expiry = expiry ? expiry : 60 * 1000;
     this.user = user;
-    this.message = message;
+    this.content = content;
   }
 }
 
@@ -377,7 +377,7 @@ export class SocketService {
       user: this.user,
       time: new Date(),
       expiry: expiration,
-      message: {
+      content: {
         subject: copyMessageSubject
       }
     }
@@ -400,11 +400,12 @@ export class SocketService {
         // console.log('encrypted message', MessageContentObject[userId]);
       }
       const encryptedMessage = JSON.parse(JSON.stringify(message)); // deep copy
-      encryptedMessage.message = JSON.stringify(userSpecificMessageSubjects);
+      encryptedMessage.content = JSON.stringify(userSpecificMessageSubjects);
       // console.log('send_message', encryptedMessage.value);
       if (toUserId) {
         this.socket.emit('send_private_message', roomId, toUserId, encryptedMessage);
       } else {
+        // console.log('send encrypted message', encryptedMessage);
         this.socket.emit('send_message', roomId, encryptedMessage);
       }
       
@@ -422,7 +423,8 @@ export class SocketService {
     // console.log('on message', message);
       if (this.useEncryption) {
          // decrypt message
-        const messageObj: any = typeof message.message === 'string' ? JSON.parse(message.message) : message.message;
+        const messageObj: any = typeof message.content === 'string' ? JSON.parse(message.content) : message.content;
+        // console.log('messageObj', messageObj);
         // console.log('messageObj', messageObj);
         if (messageObj[this.user.id]) {
           const m: MessageContent = messageObj[this.user.id];
@@ -434,14 +436,15 @@ export class SocketService {
               this.cryptoService.decryptSharedSecret(m.sharedSecret)
             );
             // console.log('decrypted message', MessageContent);
-            message.message = {
+            message.content = {
               subject: decodeURIComponent(decryptedMessageContent)
             }
             try {
-              message.message.subject = JSON.parse(message.message.subject);
+              message.content.subject = JSON.parse(message.content.subject);
             } catch(e) {
               console.log('message not json');
             }
+            // console.log('onMessage.next', {message: message, roomId: roomId});
             this.onMessage.next({message: message, roomId: roomId});
           } else {
             console.error('message sharedSecret missing :/');
@@ -531,7 +534,7 @@ export class SocketService {
 
     // message was recieved
     this.socket.on('message', (message: Message, roomId: string) => {
-      console.log('on message');
+      // console.log('on message', message);
       this.recieveMessage(message, roomId);
     });
   }

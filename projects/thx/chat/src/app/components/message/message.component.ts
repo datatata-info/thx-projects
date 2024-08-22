@@ -40,8 +40,8 @@ export class MessageComponent implements OnInit, AfterViewInit, OnDestroy {
   userColor!: string;
 
   get messageSubject(): string {
-    if (this.message && typeof this.message.message === 'object') {
-      return this.message.message.subject;
+    if (this.message && typeof this.message.content === 'object') {
+      return this.message.content.subject;
     }
     return '';
   }
