@@ -15,16 +15,13 @@ export class VoiceOverService {
   selectedVoice!: SpeechSynthesisVoice | null;
   selectedLanguage: string = 'en-US';
   voices: BehaviorSubject<SpeechSynthesisVoice[]> = new BehaviorSubject(this._voices);
+  userLang: string = navigator.language;
 
   constructor() {
-    const userLang = navigator.language;
-    // this._voices = this.synth.getVoices();
-    // console.log('navigator.language', userLang);
-    // console.log('voices', this.voices);
-    // choose default voice based on language
-    // console.log('synh?', this.synth);
-    // console.log('onvoicechanged?', this.synth.onvoiceschanged);
-    // console.log('voices', this._voices);
+    this.getVoices();
+  }
+
+  private getVoices(): void {
     if (this.synth.onvoiceschanged !== undefined) { // add listener for chrome
       this.synth.addEventListener('voiceschanged', () => {
         this._voices = this.synth.getVoices();
@@ -37,9 +34,9 @@ export class VoiceOverService {
     }
   }
 
-  selectVoice(voice: SpeechSynthesisVoice): void {
-    this.selectedVoice = voice;
-  }
+  // selectVoice(voice: SpeechSynthesisVoice): void {
+  //   this.selectedVoice = voice;
+  // }
 
   findVoiceByNameAndLang(name: string, lang: string): SpeechSynthesisVoice | null {
     for (const voice of this._voices) {

@@ -85,7 +85,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, this.settingsForm.value.voiceOverLang);
     console.log('lang', this.settingsForm.value.voiceOverLang);
     console.log('selected voice', voice);
-    if (voice) this.voiceOverService.selectVoice(voice);
+    if (voice) this.voiceOverService.selectedVoice = voice;
     this.voiceOverService.speak(voiceName);
 
   }
@@ -147,12 +147,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
         const voiceName = options.voiceOverOptions.voice;
         const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, lang);
         if (voice) {
-          this.voiceOverService.selectVoice(voice);
+          this.voiceOverService.selectedVoice = voice;
         }
       } else {
         const voice = this.voiceOverService.chooseDefaultVoice();
         if (voice) {
-          this.voiceOverService.selectVoice(voice);
+          this.voiceOverService.selectedVoice = voice;
           options.voiceOverOptions.voice = voice.name;
         }
       }
