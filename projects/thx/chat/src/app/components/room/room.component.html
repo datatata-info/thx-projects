@@ -1,4 +1,4 @@
-@if(room) {
+@if(room && canShowRoom) {
     <div class="chat-header">
             <div class="chat-controls">
                 <div class="leave-chat">
@@ -62,7 +62,9 @@
     </div>
 
     <div class="chat-input">
-        <thx-message-input [color]="user.color" [roomId]="room.id" (onMessage)="pushMyMessage($event)"></thx-message-input>
+        @if (user && room) {
+            <thx-message-input [color]="user.color" [roomId]="room.id" (onMessage)="pushMyMessage($event)"></thx-message-input>
+        }
     </div>
 
     <div class="chat-options">

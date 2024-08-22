@@ -39,11 +39,12 @@ export class RoomComponent implements OnInit, OnDestroy {
   private onRoomEstablishedSub: Subscription = new Subscription();
 
   private roomEstablished: Subject<boolean> = new Subject();
+  public canShowRoom: boolean = false;
 
   messages: Message[] = [];
   // for stats
-  recievedMessage!: string;
-  sentMessage!: string;
+  recievedMessage: any;
+  sentMessage: number = 0;
 
   voiceOver: boolean = true;
   notifications: boolean = true;
@@ -59,15 +60,18 @@ export class RoomComponent implements OnInit, OnDestroy {
     console.warn('🚀 Room init');
     this.voiceOver = this.chatService.options.voiceOver;
     // this.messages = []; // TODO: (on router navigate) reset messages (from notification)
-    if (this.chatService.user) this.user = this.chatService.user;
+    
     // subscribe for get admin
     this.onRoomEstablishedSub = this.roomEstablished.subscribe({
       next: (established: boolean) => {
         console.log('🦧 roomEstablished', established);
         if (established) {
+          if (this.chatService.user) this.user = this.chatService.user;
+          console.log('user?', this.user);
           if (this.room && this.room.admin === this.user.id) this.isAdmin = true;
           this.onRoomEstablishedSub.unsubscribe();
         }
+        this.canShowRoom = true;
       },
       error: (e: any) => console.error(e)
     });
@@ -87,11 +91,10 @@ export class RoomComponent implements OnInit, OnDestroy {
               next: (room: Room | null) => {
                 console.log('...subscribed room? ♥️', room);
                 if (room) {
-                  this.room = room;
-                  // this.chatService.subscribeRoom(roo)
-                  this.roomEstablished.next(true);
+                  this.room = room;                  
                   this.notifications = this.chatService.isRoomSubscribed(room.id);
                   console.log('notifications', this.chatService.isRoomSubscribed(room.id));
+                  this.roomEstablished.next(true);
                 } else {
                   this.router.navigate(['/']);
                 }
@@ -112,9 +115,12 @@ export class RoomComponent implements OnInit, OnDestroy {
 
     this.onMessageSub = this.chatService.onMessage.subscribe({
       next: (result: RoomMessage) => {
+        console.log('onMessage result', result);
         if (this.room && result.roomId === this.room.id) { // show only relevant messages for room (exclude notifications from other rooms)
           this.messages.unshift(result.message);
-          this.recievedMessage = result.message.id;
+          console.log('messages', this.messages);
+          const messageContentLength = typeof result.message.content.subject === 'string' ? result.message.content.subject.length : 0;
+          this.recievedMessage = {length: messageContentLength, fromId: result.message.user.id};
         }
       },
       error: (e: any) => console.error(e)
@@ -259,7 +265,8 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   pushMyMessage(message: Message): void {
     this.messages.unshift(message);
-    this.sentMessage = message.id;
+    const messageContentLength = typeof message.content.subject === 'string' ? message.content.subject.length : 0;
+    this.sentMessage = messageContentLength;
   }
 
   
