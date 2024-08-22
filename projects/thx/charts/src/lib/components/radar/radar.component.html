@@ -1,3 +1,11 @@
 <div class="radar">
+    <div class="data-items">
+        @if(data) {
+            @for(item of data; track item.id) {
+                <div class="data-item-color" [ngStyle]="{borderColor: item.color ? item.color : 'inherit'}"></div>
+                <div class="data-item-name" [ngStyle]="{color: item.color ? item.color : 'inherit'}">{{item.name}}</div>
+            }
+        }
+    </div>
     <svg #svg></svg>
 </div>
