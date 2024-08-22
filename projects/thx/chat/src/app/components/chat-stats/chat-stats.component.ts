@@ -13,9 +13,11 @@ import { MaterialModule } from '../../modules/material/material.module';
 import { TimerService, TimerData } from '../../services/timer/timer.service';
 import { ChatStatsSocketService } from '../../services/chat-stats-socket/chat-stats-socket.service';
 import { ChatService } from '../../services/chat/chat.service';
-import { User, Room, RoomMessage } from '@thx/socket';
+import { User, Room, RoomMessage, MessageContent } from '@thx/socket';
+import { ColorService } from '../../services/color/color.service';
+import { ChatStatsService } from '../../services/chat-stats/chat-stats.service';
 // components
-import { RadarComponent, RadarData, RadarDataItem, MOCK_DATA } from '@thx/charts';
+import { RadarComponent, RadarData, RadarDataItem, MOCK_DATA, ColorScheme } from '@thx/charts';
 import { ConsoleComponent } from '@thx/charts';
 // rxjs
 import { Subscription } from 'rxjs';
@@ -35,19 +37,48 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('showMore') showMoreElm!: ElementRef;
   @Input('roomId') forRoomId!: string | undefined;
-  @Input('messageSent') set messageSent(sent: any) {
-    this.chatStatsSocketService.onChatMessageSent();
-    // here sent only analysis later
-    // encryption not work for long data! it has to be used a hybrid crypto (see: verifier in previous version of thx)
-    // if (this.room) this.chatStatsSocketService.sendMessage(this.chatStatsSocketService.dataPatterns, this.room.id);
+  @Input('messageSent') set messageSent(length: number) {
+    if (length) {
+      // set on message sent to stats
+      // this.chatStatsSocketService.onChatMessageSent(length);
+      this.chatStatsService.messagingPipe(true, length);
+      // here sent only analysis later
+      // encryption not work for long data! it has to be used a hybrid crypto (see: verifier in previous version of thx)
+      if (this.room) {
+        const bigFive = {
+          id: this.user.id,
+          name: this.user.nickname,
+          color: this.user.color,
+          items: this.chatStatsService.countBigFive()
+        }
+        this.chatStatsSocketService.sendMessage({
+          bigFive: bigFive
+        }, this.room.id);
+
+        this.addRadarData(bigFive);
+      }
+    }
+    
     // if (this.room) this.chatStatsSocketService.sendMessage(this.mockRadarData, this.room.id);
     
   }
-  @Input('messageRecieved') set messageRecieved(recieved: any) {
-    this.chatStatsSocketService.onChatMessageRecieve();
+  @Input('messageRecieved') set messageRecieved(obj: any) {
+    // set on message recieved length
+    // console.log('messageRecieved', obj);
+    if (obj && obj.length && obj.fromId) {
+      this.chatStatsService.messagingPipe(false, obj.length, obj.fromId);
+      // this.chatStatsSocketService.onChatMessageRecieve(obj.length, obj.fromId);
+    }
   }
 
+  statsWidth: number = 0;
   mockRadarData: RadarData[] = MOCK_DATA;
+  radarData: RadarData[] = [];
+  colorScheme: ColorScheme = {
+    color: '#0dd',
+    background: '#131515',
+    colors: ['blue', 'green', 'brown', 'aquamarine'] // this.colorService.generateHslaColors(80, 80, 1.0, 5)
+  }
 
   private timerSub: Subscription = new Subscription();
   private enterRoomSub: Subscription = new Subscription();
@@ -63,27 +94,10 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
     private elm: ElementRef,
     private timerService: TimerService,
     private chatStatsSocketService: ChatStatsSocketService,
-    private chatService: ChatService
-  ){
-    // listeners
-    // mouse
-    document.addEventListener('mousemove', (e: MouseEvent) => this.chatStatsSocketService.mousePipe(e));
-    document.addEventListener('mousedown', (e: MouseEvent) => this.chatStatsSocketService.mousePipe(e));
-    document.addEventListener('mouseenter', (e: MouseEvent) => this.chatStatsSocketService.mousePipe(e));
-    document.addEventListener('mouseleave', (e: MouseEvent) => this.chatStatsSocketService.mousePipe(e));
-    document.addEventListener('mouseup', (e: MouseEvent) => this.chatStatsSocketService.mousePipe(e));
-    document.addEventListener('mouseout', (e: MouseEvent) => this.chatStatsSocketService.mousePipe(e));
-    document.addEventListener('mouseover', (e: MouseEvent) => this.chatStatsSocketService.mousePipe(e));
-    // keys
-    document.addEventListener('keydown', (e: KeyboardEvent) => this.chatStatsSocketService.keyPipe(e));
-    document.addEventListener('keypress', (e: KeyboardEvent) => this.chatStatsSocketService.keyPipe(e));
-    document.addEventListener('keyup', (e: KeyboardEvent) => this.chatStatsSocketService.keyPipe(e));
-    // touch
-    document.addEventListener('touchcancel', (e: TouchEvent) => this.chatStatsSocketService.touchPipe(e));
-    document.addEventListener('touchend', (e: TouchEvent) => this.chatStatsSocketService.touchPipe(e));
-    document.addEventListener('touchmove', (e: TouchEvent) => this.chatStatsSocketService.touchPipe(e));
-    document.addEventListener('touchstart', (e: TouchEvent) => this.chatStatsSocketService.touchPipe(e));
-  }
+    private chatService: ChatService,
+    private chatStatsService: ChatStatsService,
+    // private colorService: ColorService
+  ){}
 
   ngOnInit(): void {
     this.timerSub = this.timerService.subscribeTimer().subscribe({
@@ -111,9 +125,25 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
           // else do nothing
         }
       });
-
+      // stats recieved
       this.onMessageSub = this.chatStatsSocketService.onMessage.subscribe({
-        next: (roomMessage: RoomMessage) => console.log('recieved stats message', roomMessage)
+        next: (roomMessage: RoomMessage) => {
+          if (typeof roomMessage.message.content === 'object') {
+            const messageSubject: any = roomMessage.message.content.subject;
+            // console.log('recieved stats message', messageSubject);
+            if (messageSubject.bigFive) {
+              // add data to stats
+              this.addRadarData(messageSubject.bigFive);
+              this.addRadarData({
+                id: this.user.id,
+                name: this.user.nickname,
+                color: this.user.color,
+                items: this.chatStatsService.countBigFive()
+              });
+            }
+          }
+          
+        }
       });
     }
     
@@ -124,6 +154,7 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.elm) {
       this.elmBox = this.elm.nativeElement.getBoundingClientRect();
       this.minHeight = this.elmBox.height;
+      this.statsWidth = this.elmBox.width;
       console.log('elmBox', this.elmBox);
     }
     if (this.showMoreElm) {
@@ -138,17 +169,33 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.room) this.chatStatsSocketService.leaveRoom(this.room.id);
   }
 
+  private addRadarData(radarData: RadarData): void {
+    // test
+    let replaced = false;
+    for (let i = 0; i < this.radarData.length; i++) {
+      const data = this.radarData[i];
+      if (data.id === radarData.id) {
+        this.radarData[i] = radarData;
+        replaced = true;
+      }
+    }
+    if (!replaced) this.radarData.push(radarData);
+    // console.log('radarData', this.radarData);
+    // TODO: add my bifFive
+    this.radarData = JSON.parse(JSON.stringify(this.radarData)); // deep copy
+  }
+
   private listenShowMore(elm: HTMLElement): void {
-    elm.addEventListener('touchstart', this.touchStart.bind(this));
+    // elm.addEventListener('touchstart', this.touchStart.bind(this));
     elm.addEventListener('touchmove', this.touchMove.bind(this));
-    elm.addEventListener('touchend', this.touchEnd.bind(this));
-    elm.addEventListener('touchcancel', this.touchEnd.bind(this));
+    // elm.addEventListener('touchend', this.touchEnd.bind(this));
+    // elm.addEventListener('touchcancel', this.touchEnd.bind(this));
     // todo mouse
   }
 
-  private touchStart(e: TouchEvent | MouseEvent): void {
-    console.log('touchstart', e);
-  }  
+  // private touchStart(e: TouchEvent | MouseEvent): void {
+  //   console.log('touchstart', e);
+  // }  
 
   private touchMove(e: TouchEvent | MouseEvent): void {
     // console.log('touchmove', e);
@@ -156,13 +203,15 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
       // console.log('screen.height', screen.height);
       // console.log('clientY', e.touches[0].clientY);
       const y = e.touches[0].clientY - this.elmBox.top;
-      if (/* y >= this.elmBox.top &&  */y < screen.height - this.elmBox.top) {
+      // console.log('y', y);
+      // console.log('screen.height - this.elmBox.top', screen.height - this.elmBox.top);
+      if ( y < (screen.height - (1.9 * this.elmBox.top)) ) {
         this.elm.nativeElement.style.height = `${y}px`;
       }
     }
   }
 
-  private touchEnd(e: TouchEvent | MouseEvent): void {
-    console.log('touchend | touchcancel', e);
-  }
+  // private touchEnd(e: TouchEvent | MouseEvent): void {
+  //   console.log('touchend | touchcancel', e);
+  // }
 }

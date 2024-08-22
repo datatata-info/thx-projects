@@ -1,11 +1,17 @@
 @if(timerData) {
     <h2 class="timer">{{timerData}}</h2>
+}
+@if(statsWidth && colorScheme && radarData.length) {
     <div class="stats-content">
-        <thx-charts-radar [data]="mockRadarData"></thx-charts-radar>
+        <thx-charts-radar
+            [data]="radarData"
+            [colorScheme]="colorScheme"
+            [size]="statsWidth"
+        ></thx-charts-radar>
         <!-- <thx-charts-console></thx-charts-console> --> 
-        ... TBD ...
-    </div>
-    <div #showMore class="show-more">
-        <mat-icon color="primary" class="material-symbols-outlined" inline="true">more_horiz</mat-icon>
     </div>
 }
+
+<div #showMore class="show-more">
+    <mat-icon color="primary" class="material-symbols-outlined" inline="true">more_horiz</mat-icon>
+</div>
