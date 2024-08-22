@@ -38,6 +38,7 @@ html, body, thx-root {
     color: $light-color2;
     font-size: large;
     overflow: hidden;
+    position: relative;
 }
 
 
@@ -456,12 +457,16 @@ thx-chat-stats {
     .stats-content {
         position: absolute;
         overflow: hidden;
+        overflow-y: scroll;
+        height: 100%;
         top: calc(3 * $space);
     }
     .show-more {
         font-size: xx-large;
         position: absolute;
         bottom: 0;
+        width: 100%;
+        text-align: center;
     }
 }
 
