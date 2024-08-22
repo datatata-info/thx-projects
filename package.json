@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "start-pwa": "ng build --configuration production --project @thx/chat && http-server --ssl --cert '/Library/WebServer/Documents/dev/projects/thx/certs/cert.pem' --key '/Library/WebServer/Documents/dev/projects/thx/certs/key.pem' -p 8080 -c-1 dist/thx/build/chat/browser/",
+    "start-pwa": "ng build --configuration production --project @thx/chat && http-server --ssl --cert '/Users/tomasjavurek/Documents/certs/localhost/localhost-cert.pem' --key '/Users/tomasjavurek/Documents/certs/localhost/localhost-key.pem' -p 8080 -c-1 dist/thx/build/chat/browser/",
     "build": "ng extract-i18n --project @thx/chat && ng build --configuration production --project @thx/chat",
     "build-push": "npm run build && cd dist/thx/build && git add -A && git commit -m 'rebuild' && git push",
     "watch": "ng build --watch --configuration development",
