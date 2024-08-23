@@ -1,1 +1,17 @@
-<p>dialog works!</p>
+@if(dialogData) {
+    <h2 mat-dialog-title>{{dialogData.title}}</h2>
+    <mat-dialog-content>
+        {{dialogData.content}}
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close i18n>Cancel</button>
+        <span class="spacer"></span>
+        @for(action of dialogData.actions; track action.value) {
+            @if(action.focus) {
+                <button mat-button [mat-dialog-close]="action.value" cdkFocusInitial>{{action.title}}</button>
+            } @else {
+                <button mat-button [mat-dialog-close]="action.value">{{action.title}}</button>
+            }
+        }
+    </mat-dialog-actions>
+}
