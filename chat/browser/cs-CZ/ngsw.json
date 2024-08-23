@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1723626411056,
+  "timestamp": 1724388620413,
   "index": "/cs-CZ/index.html",
   "assetGroups": [
     {
@@ -11,14 +11,14 @@
         "ignoreVary": true
       },
       "urls": [
-        "/cs-CZ/chunk-L32MPUDN.js",
-        "/cs-CZ/chunk-N2JDFIMX.js",
+        "/cs-CZ/chunk-D5RFJ7YP.js",
+        "/cs-CZ/chunk-L6UQF7TY.js",
         "/cs-CZ/favicon.ico",
         "/cs-CZ/index.html",
-        "/cs-CZ/main-3TN63355.js",
+        "/cs-CZ/main-WICEJECL.js",
         "/cs-CZ/manifest.webmanifest",
         "/cs-CZ/polyfills-RVO5MQLM.js",
-        "/cs-CZ/styles-AITYMMVF.css"
+        "/cs-CZ/styles-EDLYMDFH.css"
       ],
       "patterns": []
     },
@@ -44,8 +44,8 @@
   ],
   "dataGroups": [],
   "hashTable": {
-    "/cs-CZ/chunk-L32MPUDN.js": "ebd8d34854a77650ddf98f46a48338232c2f37ee",
-    "/cs-CZ/chunk-N2JDFIMX.js": "e0a470ed2e9c9679d1d3096d362ff5515330619b",
+    "/cs-CZ/chunk-D5RFJ7YP.js": "84494db351812264c4f34f6251a366c76ce8139e",
+    "/cs-CZ/chunk-L6UQF7TY.js": "05baacd2eb213a12a49727b250cea3d3b167a56c",
     "/cs-CZ/favicon.ico": "7f39c2a6dc6f78d56bd4d3c88c0f53aac6b38c19",
     "/cs-CZ/icons/icon-128x128.png": "064967e17a58ea059dc31622894a520c18277d7d",
     "/cs-CZ/icons/icon-144x144.png": "fdd8656c2caa8dd79efbbc15b0178137ef51ca8d",
@@ -55,11 +55,11 @@
     "/cs-CZ/icons/icon-512x512.png": "d048975d14fc719e1a56043356064efe91c62008",
     "/cs-CZ/icons/icon-72x72.png": "2bcb224548a4a6137e9c630b64353ab238138640",
     "/cs-CZ/icons/icon-96x96.png": "346dfa587b48d438aea1aa9d5884576ee32c000c",
-    "/cs-CZ/index.html": "480883a5aa8bb3b40d80e0646f89f8fc54f03c6b",
-    "/cs-CZ/main-3TN63355.js": "fa5f9e37fe7708861be929b7c5179a199cb338e4",
+    "/cs-CZ/index.html": "641539638e5ef62865edf6ff3b2b7d3b0ee2bcd9",
+    "/cs-CZ/main-WICEJECL.js": "afcf3e2bad0e670f41fbc72a7bb833b36e8992a4",
     "/cs-CZ/manifest.webmanifest": "94162150e340d94dc031435ddc36dc66d23435f7",
     "/cs-CZ/polyfills-RVO5MQLM.js": "63cd1a1f74535668548a5a5db7a8458f587c3162",
-    "/cs-CZ/styles-AITYMMVF.css": "3276166d18dd209a843589a6cc27be49b4b870e6"
+    "/cs-CZ/styles-EDLYMDFH.css": "a3a848e774030f29884f316b95317605fd4cda26"
   },
   "navigationUrls": [
     {
