@@ -52,36 +52,7 @@ export class HelloComponent implements OnInit, OnDestroy {
   }
 
   goToRooms(): void {
-    if (!isDevMode() && this.chatService.options.user) {
-      console.log('asking for notifications...')
-      const user = this.chatService.options.user;
-      if (!("Notification" in window)) {
-        console.warn('This browser does not support desktop notification');
-        this.router.navigate(['/chat']);
-      } else if (Notification.permission === 'granted') {
-        // this.chatService.login(this.chatService.options.user);
-        this.chatService.requestPushNotifications();
-        this.router.navigate(['/chat']);
-      } else if (Notification.permission === 'denied' || Notification.permission === 'default') {
-        Notification.requestPermission().then((permission: NotificationPermission) => {
-          if (permission === 'granted') {
-            this.chatService.requestPushNotifications();
-            const hello = new Notification('@thx/chat', {
-              icon: 'icons/icon-96x96.png',
-              body: $localize `Welcome ${user.nickname}`
-              // vibrate: [200, 100, 200],
-              // timestamp: Date.now()
-            });
-            console.log('....sending notification');
-          }
-          this.router.navigate(['/chat']);
-          // this.chatService.login(this.user);
-        })
-      }
-    } else {
-      this.router.navigate(['/chat']);
-    }
-    
+    this.router.navigate(['/chat']);    
   }
 
 }
