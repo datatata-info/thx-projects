@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [],
@@ -23,7 +24,8 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
     MatSelectModule,
     MatAutocompleteModule,
     MatMenuModule,
-    MatBottomSheetModule
+    MatBottomSheetModule,
+    MatDialogModule
   ],
   exports: [
     CommonModule,
@@ -35,7 +37,8 @@ import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
     MatSelectModule,
     MatAutocompleteModule,
     MatMenuModule,
-    MatBottomSheetModule
+    MatBottomSheetModule,
+    MatDialogModule
   ]
 })
 export class MaterialModule { }
