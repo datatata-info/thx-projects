@@ -232,6 +232,21 @@ export class SocketService {
     this.socket.emit('logout', this.user);
   }
 
+  hasPush(): Subject<boolean> {
+    const subject: Subject<boolean> = new Subject();
+    this.socket.emit('has_push', this.user.id, (result: any) => {
+      if (result.success) {
+        subject.next(result.push); // can be true or false
+        subject.complete();
+      } else {
+        console.error(result.message);
+        subject.error(result.message);
+        subject.complete();
+      }
+    });
+    return subject;
+  }
+
   requestPushNotifications(): void {
     console.warn('subsribeNotifications for user', this.user);
     // create swPush Subscription
@@ -241,8 +256,8 @@ export class SocketService {
           // if subscribtion, then send with login
           console.log('!!!!! push subsbscribtion', sub);
           if (sub && sub.endpoint) { // no endpoint in Safari
-            console.log('request_push', 'TODO on server');
-            this.socket.emit('request_push', this.user, sub);
+            console.log('subscribe_push', 'TODO on server');
+            this.socket.emit('subscribe_push', this.user, sub);
           } 
           pushSub.unsubscribe();
         },

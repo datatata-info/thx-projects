@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, isDevMode } from '@angular/core';
 import { Location } from '@angular/common';
 // router
 import { Router, RouterModule } from '@angular/router';
@@ -10,12 +10,12 @@ import { SubscribedRoomsMenuComponent } from '../subscribed-rooms-menu/subscribe
 // form
 import { FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 // services
-import { ChatSocketService } from '../../services/chat-socket/chat-socket.service';
 import { MessageInputComponent } from '../message-input/message-input.component';
 import { ChatService } from '../../services/chat/chat.service';
+import { DialogService, DialogData } from '../../services/dialog/dialog.service';
 // rxjs
 import { Subscription, Observable, startWith, map } from 'rxjs'; 
-import { Room, RoomMessage, User } from '@thx/socket';
+import { Room, User } from '@thx/socket';
 
 @Component({
   selector: 'thx-rooms',
@@ -65,6 +65,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     private chatService: ChatService,
     private router: Router,
     private bottomSheet: MatBottomSheet,
+    private dialogService: DialogService,
     private location: Location
   ) {}
 
@@ -84,6 +85,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
       startWith(''),
       map(value => this._filter(value || '')),
     );
+
     this.chatService.getAvailableRooms();
     if (!this.chatService.options.user) {
       console.warn('NO USER? :(');
@@ -93,6 +95,8 @@ export class RoomsComponent implements OnInit, OnDestroy {
       // this.chatSocketService.setUserNickname(this.nickname);
     } else {
       this.user = this.chatService.options.user;
+      // handle push notifications
+      this.handlePushNotifications();
     }
     
 
@@ -170,6 +174,88 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   openBottomSheet(): void {
     this.bottomSheet.open(SubscribedRoomsMenuComponent);
+  }
+
+  private handlePushNotifications(): void {
+    if (!isDevMode() && this.chatService.options.user && "Notification" in window) {
+      console.log('asking for notifications...')
+      const user = this.chatService.options.user;
+
+      const hasPushSub: Subscription = this.chatService.hasPush().subscribe({
+        next: (hasPush: boolean) => {
+          console.log('user hasPush?', hasPush);
+          if (hasPush) {
+            // do nothing
+          } else {
+            // ask user to accept push
+            this.dialogService.openDialog({
+              title: 'Notifications',
+              content: 'thx/chat is asking for notification permissions.',
+              actions: [
+                {title: 'Deny', value: 'deny'},
+                {title: 'Allow', value: 'allow', focus: true}
+              ]
+            }).subscribe({
+              next: (value: any) => {
+                console.log('dialog value', value);
+                if (value === 'allow') {
+                  console.log('Notification.permission', Notification.permission);
+                  if (Notification.permission === 'granted') {
+                    this.chatService.requestPushNotifications();
+                    this.sendHelloNotification();
+                  }
+                  if (Notification.permission === 'denied' || Notification.permission === 'default') {
+                    Notification.requestPermission()
+                    .then((permission: NotificationPermission) => {
+                      if (permission === 'granted') {
+                        this.chatService.requestPushNotifications();
+                        this.sendHelloNotification();
+                      }
+                    })
+                    .catch((e: any) => console.error(e));
+                  }
+                }
+              },
+              error: (e: any) => console.error(e)
+            });
+          }
+        },
+        complete: () => hasPushSub.unsubscribe(),
+        error: (e: any) => console.error(e)
+      });
+
+      // if (!("Notification" in window)) {
+      //   console.warn('This browser does not support desktop notification');
+      //   // this.router.navigate(['/chat']);
+      // } else if (Notification.permission === 'granted') {
+      //   // this.chatService.login(this.chatService.options.user);
+      //   this.chatService.requestPushNotifications();
+      //   // this.router.navigate(['/chat']);
+      // } else if (Notification.permission === 'denied' || Notification.permission === 'default') {
+      //   Notification.requestPermission().then((permission: NotificationPermission) => {
+      //     if (permission === 'granted') {
+      //       this.chatService.requestPushNotifications();
+      //       const hello = new Notification('@thx/chat', {
+      //         icon: 'icons/icon-96x96.png',
+      //         body: $localize `Welcome ${user.nickname}`
+      //         // vibrate: [200, 100, 200],
+      //         // timestamp: Date.now()
+      //       });
+      //       console.log('....sending notification');
+      //     }
+      //     // this.router.navigate(['/chat']);
+      //     // this.chatService.login(this.user);
+      //   })
+      // }
+    }
+  }
+
+  private sendHelloNotification(): void {
+    const hello = new Notification('@thx/chat', {
+      icon: 'icons/icon-96x96.png',
+      body: $localize `Welcome ${this.user.nickname}`
+    });
+    console.log('sending notification...');
   }
 
   private _filter(value: string): Room[] {
