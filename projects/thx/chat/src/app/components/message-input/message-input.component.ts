@@ -1,9 +1,11 @@
-import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnInit, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Message } from '@thx/socket';
 import { MaterialModule } from '../../modules/material/material.module';
 import { EmojiComponent } from '../emoji/emoji.component';
 import { ChatService } from '../../services/chat/chat.service';
+// rxjs
+import { Subscription } from 'rxjs';
 
 
 const SEND_MESSAGE_DELAY: number = 1500;
@@ -16,11 +18,14 @@ const SEND_MESSAGE_DELAY: number = 1500;
   styleUrl: './message-input.component.scss'
 })
 
-export class MessageInputComponent implements OnInit {
+export class MessageInputComponent implements OnInit, OnDestroy {
 
   @Input('roomId') roomId!: string;
   @Input('color') color!: string | undefined;
-  @Output('onMessage') onMessage: EventEmitter<Message> = new EventEmitter()
+  @Output('onMessage') onMessage: EventEmitter<Message> = new EventEmitter();
+
+  connected: boolean = false;
+  private connectionSub: Subscription = new Subscription();
 
   sendMessageForm: FormGroup = new FormGroup({
     message: new FormControl('')
@@ -37,7 +42,14 @@ export class MessageInputComponent implements OnInit {
 
   ngOnInit(): void {
     // console.log('input color?', this.color);
+    this.connectionSub = this.chatService.connected.subscribe({
+      next: (connected: boolean) => this.connected = connected
+    });
 
+  }
+
+  ngOnDestroy(): void {
+    this.connectionSub.unsubscribe();
   }
 
   getUserNickname(): string {

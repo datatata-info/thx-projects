@@ -1,7 +1,11 @@
 @if (showEmoji) {
     <thx-emoji (onClose)="hideEmoji()" (selected)="onSelectEmoji($event)"></thx-emoji>
 }
-<form [formGroup]="sendMessageForm" (ngSubmit)="sendMessage()" [ngStyle]="{color: color ? color : 'unset'}">
+<form
+    [formGroup]="sendMessageForm"
+    (ngSubmit)="sendMessage()"
+    [ngStyle]="{color: color ? color : 'unset'}"
+>
     <!-- TODO: show user emoji -->
     <div class="nickname">{{getUserNickname()}}</div>
     <input
@@ -11,12 +15,17 @@
         name="message"
         id="message"
         formControlName="message"
-        placeholder="Message..."
+        [placeholder]="connected ? 'Message...' : 'Offline'"
         i18n-placeholder
         maxlength="1500"
     >
     <mat-icon (click)="toggleEmoji()" class="emoji material-symbols-outlined" aria-hidden="false" fontIcon="mood" inline="true"></mat-icon>
-    <button class="large" mat-icon-button [disabled]="!sendMessageForm.value.message" type="submit">
+    <button
+        class="large"
+        mat-icon-button
+        [disabled]="!sendMessageForm.value.message || !connected"
+        type="submit"
+    >
         <mat-icon class="material-symbols-outlined" aria-hidden="false" aria-label="Send message" fontIcon="arrow_upward" inline="true"></mat-icon>
     </button>
 </form>
