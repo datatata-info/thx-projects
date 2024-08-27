@@ -9,13 +9,15 @@ export class ChatStatsSocketService extends SocketService {
 
   constructor() {
     super();
-    this.appName = 'thx-chat-stats';
+    this.appOptions = {
+      appName: 'thx-chat-stats'
+    };
     this.connect();
   }
 
   subscribeRoom(roomId: string): Subject<Room | null> {
     // const subject: Subject<any> = new Subject();
-    const statsRoomId: string = `${this.appName}-${roomId}`;
+    const statsRoomId: string = `${this.appOptions.appName}-${roomId}`;
     return this.enterRoom(statsRoomId, statsRoomId);
   }
   
