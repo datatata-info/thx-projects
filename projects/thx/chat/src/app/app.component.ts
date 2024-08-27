@@ -39,6 +39,11 @@ export class AppComponent implements OnInit, OnDestroy {
   ){}
 
   ngOnInit(): void {
+    /* PREVENT iOS bounce effect (elastic scroll no scrollabel element) */
+    document.body.addEventListener('touchmove', (e: TouchEvent) => {
+      // console.log('touchmove', e);
+      e.preventDefault();
+    }, { passive: false });
     // this.audioService.listenUserEventToActivateContext();
     const chatOptions = this.chatService.options;
     this.onVoices = this.voiceOverService.voices.subscribe({
