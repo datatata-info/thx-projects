@@ -11,6 +11,7 @@ import { VoiceOverService } from '../../services/voice-over/voice-over.service';
 import { ChatService, ChatOptions } from '../../services/chat/chat.service';
 import { ColorService } from '../../services/color/color.service';
 import { EmojiService } from '../../services/emoji/emoji.service';
+import { DialogService, DialogData } from '../../services/dialog/dialog.service';
 // rxjs
 import { Subscription } from 'rxjs';
 
@@ -40,7 +41,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private chatService: ChatService,
     private emojiService: EmojiService,
     private colorService: ColorService,
-    private location: Location
+    private location: Location,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -166,9 +168,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   resetChatOptions(): void {
-    if (this.chatService.confirmQuestion($localize `Want to reset all settings to default? You will loose ALL chat subscribtions.`)) {
-      this.chatService.resetOptions();
-    }
+    const dialogData: DialogData = {
+      title: $localize `Reset Options`,
+      content: $localize `Want to reset all settings to default? You will loose ALL chat subscribtions.`,
+      actions: [
+        { title: 'Reset', value: 'reset', focus: true, warn: true }
+      ]
+    };
+    const dialogSub: Subscription = this.dialogService.openDialog(dialogData).subscribe({
+      next: (value: string) => {
+        if (value === 'reset') {
+          this.chatService.resetOptions();
+        }
+        dialogSub.unsubscribe();
+      } 
+    });
   }
 
   log(key: any, value: any): void {
