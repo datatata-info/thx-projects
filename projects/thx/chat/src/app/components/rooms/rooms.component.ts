@@ -58,6 +58,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
   private onPublicRoomClosedSub: Subscription = new Subscription();
   private onPublicRoomUpdatedSub: Subscription = new Subscription();
   private onSocketConnectionChange: Subscription = new Subscription();
+  private onUserSetSub: Subscription = new Subscription();
 
 
   constructor(
@@ -95,9 +96,19 @@ export class RoomsComponent implements OnInit, OnDestroy {
       // this.chatSocketService.setUserNickname(this.nickname);
     } else {
       this.user = this.chatService.options.user;
-      // handle push notifications
-      this.handlePushNotifications();
     }
+
+    this.onUserSetSub = this.chatService.onUserSet.subscribe({
+      next: (user: User | null) => {
+        console.log('onUserSet', user);
+        if (user) {
+          // handle push notifications
+          this.handlePushNotifications();
+        }
+        
+      },
+      error: (e: any) => console.error(e)
+    })
     
 
     this.onNewRoomSub = this.chatService.onNewRoom.subscribe({
@@ -170,6 +181,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onPublicRoomClosedSub.unsubscribe();
     this.onPublicRoomUpdatedSub.unsubscribe();
     this.onSocketConnectionChange.unsubscribe();
+    this.onUserSetSub.unsubscribe();
   }
 
   openBottomSheet(): void {
@@ -177,6 +189,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
   }
 
   private handlePushNotifications(): void {
+    if (!("Notification" in window)) {
+      console.warn('This browser does not support notifications.');
+      console.log('window', window);
+    }
     if (!isDevMode() && this.chatService.options.user && "Notification" in window) {
       console.log('asking for notifications...')
       const user = this.chatService.options.user;
@@ -189,11 +205,11 @@ export class RoomsComponent implements OnInit, OnDestroy {
           } else {
             // ask user to accept push
             this.dialogService.openDialog({
-              title: 'Notifications',
-              content: 'thx/chat is asking for notification permissions.',
+              title: $localize `Notifications`,
+              content: $localize `@thx/chat would like to send you notifications.`,
               actions: [
-                {title: 'Deny', value: 'deny'},
-                {title: 'Allow', value: 'allow', focus: true}
+                {title: $localize `Deny`, value: 'deny'},
+                {title: $localize `Allow`, value: 'allow', focus: true}
               ]
             }).subscribe({
               next: (value: any) => {
@@ -223,37 +239,14 @@ export class RoomsComponent implements OnInit, OnDestroy {
         complete: () => hasPushSub.unsubscribe(),
         error: (e: any) => console.error(e)
       });
-
-      // if (!("Notification" in window)) {
-      //   console.warn('This browser does not support desktop notification');
-      //   // this.router.navigate(['/chat']);
-      // } else if (Notification.permission === 'granted') {
-      //   // this.chatService.login(this.chatService.options.user);
-      //   this.chatService.requestPushNotifications();
-      //   // this.router.navigate(['/chat']);
-      // } else if (Notification.permission === 'denied' || Notification.permission === 'default') {
-      //   Notification.requestPermission().then((permission: NotificationPermission) => {
-      //     if (permission === 'granted') {
-      //       this.chatService.requestPushNotifications();
-      //       const hello = new Notification('@thx/chat', {
-      //         icon: 'icons/icon-96x96.png',
-      //         body: $localize `Welcome ${user.nickname}`
-      //         // vibrate: [200, 100, 200],
-      //         // timestamp: Date.now()
-      //       });
-      //       console.log('....sending notification');
-      //     }
-      //     // this.router.navigate(['/chat']);
-      //     // this.chatService.login(this.user);
-      //   })
-      // }
     }
   }
 
   private sendHelloNotification(): void {
     const hello = new Notification('@thx/chat', {
       icon: 'icons/icon-96x96.png',
-      body: $localize `Welcome ${this.user.nickname}`
+      body: $localize `Welcome ${this.user.nickname}`,
+      silent: false
     });
     console.log('sending notification...');
   }
