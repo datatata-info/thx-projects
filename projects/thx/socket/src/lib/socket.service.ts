@@ -107,8 +107,8 @@ interface SocketCallback {
 
 interface AppOptions {
   appName: string,
-  appTitle: string,
-  appIcon: string
+  appTitle?: string,
+  appIcon?: string
 }
 
 @Injectable({
