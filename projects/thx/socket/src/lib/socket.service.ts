@@ -105,6 +105,12 @@ interface SocketCallback {
   data?: any
 }
 
+interface AppOptions {
+  appName: string,
+  appTitle: string,
+  appIcon: string
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -119,7 +125,13 @@ export class SocketService {
   protected cryptoService!: CryptoService;
   private userPublicKeys: any = {};  
 
-  public appName: string = '';
+  // app options
+  public appOptions!: AppOptions;
+  // public appName: string = '';
+  // public appTitle: string = '';
+  // public appIcon: string = '';
+
+
   public user!: User;
   public connected: BehaviorSubject<boolean> = new BehaviorSubject(false);
   // private _connected: boolean = false;
@@ -133,6 +145,7 @@ export class SocketService {
   public onPublicRoomClosed: Subject<string> = new Subject();
   public onPublicRoomUpdated: Subject<Room> = new Subject();
   public onError: Subject<ErrorEvent | Error> = new Subject();
+  public onUserSet: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   // push notifications
   public onPush: Observable<any> = new Observable();
   public onPushClick: Observable<any> = new Observable();
@@ -145,7 +158,7 @@ export class SocketService {
     this.onPush = this.swPush.messages;
     this.onPushClick = this.swPush.notificationClicks;
 
-    this.swPush.notificationClicks
+    // this.swPush.notificationClicks
     if (HOST) this.socketHost = HOST;
     if (PORT) this.socketPort = PORT;
     if (PATH) this.socketPath = PATH;
@@ -178,19 +191,6 @@ export class SocketService {
       .then((sub: PushSubscription) => {
         subject.next(sub);
         subject.complete();
-        // console.log('PushSubscription', sub.toJSON());
-        /* 
-        const keys: SubscriptionObjectKeys = {
-          auth: sub.toJSON().keys.auth,
-          p256dh: sub.toJSON().keys.p256dh
-        };
-        const subscriptionObject: SubscriptionObject = {
-          endpoint: sub.endpoint,
-          expirationTime: 0,
-          keys: keys
-        };
-        */
-
       })
       .catch((e: any) => {
         subject.next(null);
@@ -211,7 +211,9 @@ export class SocketService {
     this.socket = io(url, {
       path: this.socketPath ? this.socketPath + '/socket.io' : '/socket.io',
       query: {
-        "appName": this.appName
+        'options': this.appOptions
+        // 'appName': this.appName,
+        // 'appTitle': this.appTitle
       }
     });
     
@@ -223,6 +225,7 @@ export class SocketService {
 
   login(user: User): void {
     this.user = user;
+    this.onUserSet.next(this.user);
     console.log('login user', user);    
     this.socket.emit('login', this.user);
   }
@@ -234,16 +237,22 @@ export class SocketService {
 
   hasPush(): Subject<boolean> {
     const subject: Subject<boolean> = new Subject();
-    this.socket.emit('has_push', this.user.id, (result: any) => {
-      if (result.success) {
-        subject.next(result.push); // can be true or false
-        subject.complete();
-      } else {
-        console.error(result.message);
-        subject.error(result.message);
-        subject.complete();
-      }
-    });
+    if (this.user && this.user.id) {
+      this.socket.emit('has_push', this.user.id, (result: any) => {
+        if (result.success) {
+          subject.next(result.push); // can be true or false
+          subject.complete();
+        } else {
+          console.error(result.message);
+          subject.error(result.message);
+          subject.complete();
+        }
+      });
+    } else {
+      console.error('No user defined');
+      subject.error('No user defined');
+      subject.complete();
+    }
     return subject;
   }
 
@@ -332,7 +341,7 @@ export class SocketService {
     const room: Room = {
       id: roomId ? roomId : uuidv4(),
       config: roomConfig,
-      appName: this.appName,
+      appName: this.appOptions.appName,
       admin: this.user.id,
       size: 1
     }

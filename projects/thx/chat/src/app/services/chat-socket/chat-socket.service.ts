@@ -13,7 +13,13 @@ export class ChatSocketService extends SocketService {
 
   constructor() {
     super();
-    this.appName = 'thx-chat';
+    // this.appName = 'thx-chat';
+    // this.appTitle = '@thx/chat';
+    this.appOptions = {
+      appName: 'thx-chat',
+      appTitle: '@thx/chat',
+      appIcon: 'icons/icon-96x96.png'
+    }
     this.connect();
     // console.log('...subscribe cert');
     this.onCertPrepared.subscribe({
