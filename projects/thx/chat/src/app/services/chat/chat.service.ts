@@ -19,6 +19,14 @@ export interface ChatOptions {
   termsRevision: number
 }
 
+export interface PushPayload {
+  title: string,
+  body: string,
+  icon?: string,
+  actions?: any[],
+  data?: any
+}
+
 const CHAT_OPTIONS_STORAGE_NAME: string = 'thx-chat-options';
 
 @Injectable({
@@ -50,6 +58,31 @@ export class ChatService extends ChatSocketService {
   ) {
     super();
     this.options = this.getOptionsFromStorage();
+    // NOTIFICATIONS
+    this.onPush.subscribe({
+      next: (payload: PushPayload) => {
+        console.log('PUSH PAYLOAD', payload);
+        return; // DO NOTHING WHEN APP IS ACTIVE
+        // TODO: play sound?, speak?
+        // this.swPush.subscription.pipe()
+        // navigator.serviceWorker.getRegistration()
+        // .then((reg: ServiceWorkerRegistration | undefined) => {
+        //   if (reg) {
+        //     reg.showNotification(payload.title, {
+        //         icon: payload.icon,
+        //         body: payload.body,
+        //         data: payload.data,
+        //       });
+        //   }
+        // })
+      }
+    });
+    this.onPushClick.subscribe({
+      next: (value: any) => {
+        console.log('PUSH CLICK', value);
+      }
+    })
+
   }
 
   private getOptionsFromStorage(): ChatOptions {
@@ -58,12 +91,9 @@ export class ChatService extends ChatSocketService {
     return this.options;
   }
 
-  // private saveOptions(options: ChatOptions): void {
-  //   this.options = options;
-  //   this.updateOptions();
-  // }
-// 
+  
   updateOptions(options?: ChatOptions): void {
+    // TODO: make options subscribeable (BehaviorSubject)
     if (options) this.options = options;
     localStorage.setItem(CHAT_OPTIONS_STORAGE_NAME, JSON.stringify(this.options));
   }
