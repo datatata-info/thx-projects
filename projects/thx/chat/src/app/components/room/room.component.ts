@@ -8,6 +8,7 @@ import { MessageInputComponent } from '../message-input/message-input.component'
 import { ChatStatsComponent } from '../chat-stats/chat-stats.component';
 // services
 import { ChatService } from '../../services/chat/chat.service';
+import { DialogService } from '../../services/dialog/dialog.service';
 // rxjs
 import { Subscription, Subject } from 'rxjs';
 import { Message, Room, RoomMessage, User } from '@thx/socket';
@@ -53,7 +54,8 @@ export class RoomComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private dialogService: DialogService
   ){}
 
   ngOnInit(): void {
@@ -173,14 +175,27 @@ export class RoomComponent implements OnInit, OnDestroy {
   leaveRoom(): void {
     // TODO: even if admin, leave with or without closing (let the room open)
     if (!this.notifications) {
-      if (this.chatService.confirmQuestion($localize `You are going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`)) {
-        // if (this.room) this.chatService.sendByeAndLeaveRoom(this.room.id);
-        // this.router.navigate(['/chat']);
-      }
-    } /* else {
+      const dialogSub: Subscription = this.dialogService.openDialog({
+        title: $localize `Leave Chat?`,
+        content: $localize `You are going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`,
+        actions: [
+          {title: $localize `Leave`, value: 'leave'}
+        ]
+      }).subscribe({
+        next: (value: string) => {
+          if (value === 'leave') {
+            if (this.room) this.chatService.sendByeAndLeaveRoom(this.room.id);
+            this.router.navigate(['/chat']);
+          }
+          dialogSub.unsubscribe();
+        }
+      });
+    } else {
+      // notifications ON
+      // go back to chat (rooms)
       this.router.navigate(['/chat']);
-    } */
-   this.router.navigate(['/chat']);
+    }
+    
     
   }
 
@@ -198,17 +213,35 @@ export class RoomComponent implements OnInit, OnDestroy {
   closeRoom(): void {
     // send to room
     // this.chatSocketService.sendMessage(`🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`, this.room.id);
-    if (this.room && this.chatService.confirmQuestion($localize `Would you like to close this chat? Other users will receive a message and be disconnected from the chat in a moment.`)) {
-      this.chatService.closeRoom(this.room.id).subscribe({
-        next: (result: any) => {
-          if (result.success) {
-            console.log('room close result', result);
-          }
-        },
-        error: (e: any) => console.error(e)
-      });
-    }
-    
+    const dialogSub: Subscription = this.dialogService.openDialog({
+      title: $localize `Close Chat?`,
+      content: $localize `Would you like to close this chat? Other users will receive a message and be disconnected from the chat in a moment.`,
+      actions: [
+        { title: $localize `No`, value: 'no', focus: true },
+        { title: $localize `Yes`, value: 'yes', warn: true }
+      ]
+    }).subscribe({
+      next: (value: string) => {
+        if (value === 'yes' && this.room) {
+          const closeSub: Subscription = this.chatService.closeRoom(this.room.id).subscribe({
+            next: (result: any) => {
+              // console.log('room close res')
+              console.log('room close result', result);
+              if (result.success) {
+                console.log('room close result', result);
+              } else { // room probably not exist anymore
+                if (this.room) this.chatService.unsubscribeRoom(this.room.id)
+                this.router.navigate(['/chat']);
+              }
+              closeSub.unsubscribe();
+            },
+            error: (e: any) => console.error(e)
+          })
+        }
+        dialogSub.unsubscribe();
+      },
+      error: (e: any) => console.error(e)
+    });    
   }
 
   copyChatLinkToClipboard(): void {
@@ -216,7 +249,20 @@ export class RoomComponent implements OnInit, OnDestroy {
     navigator.clipboard.writeText(location.href)
     .then(() => {
       // Alert the copied text
-      alert($localize `Link successfully copied to clipboard.`);
+      const dialogSub: Subscription = this.dialogService.openDialog({
+        title: $localize `On board!`,
+        content: $localize `Link successfully copied to clipboard.`,
+        actions: []
+      }).subscribe({
+        next: () => {
+          dialogSub.unsubscribe();
+        },
+        error: (e: any) => {
+          dialogSub.unsubscribe();
+          console.error(e);
+        }
+      })
+      // alert($localize `Link successfully copied to clipboard.`);
     })
     .catch((e: any) => {
       alert(e);
