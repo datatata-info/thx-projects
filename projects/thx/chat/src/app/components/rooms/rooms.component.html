@@ -1,5 +1,15 @@
 <div class="welcome">
+    <!-- SUBSCRIBED ROOMS -->
+    <div class="subscribed-rooms">
+        @if(getSubscribedRooms().length) {
+            <button mat-icon-button (click)="openBottomSheet()" color="warn" class="large">
+                <mat-icon class="material-symbols-outlined" inline="true">mark_unread_chat_alt</mat-icon>
+            </button>
+        }
+    </div>
+    <!-- <span class="spacer"></span> -->
     <h4 i18n [ngStyle]="{color: user.color ? user.color : 'unset'}">Welcome {{user.nickname}}</h4>
+    <!-- <span class="spacer"></span> -->
     <button mat-icon-button class="large" [routerLink]="['/settings']">
         <mat-icon
             color="primary"
@@ -10,14 +20,6 @@
 </div>
 
 @if (socketConnected) {
-    <!-- SUBSCRIBED ROOMS -->
-     <div class="subscribed-rooms">
-        @if(getSubscribedRooms().length) {
-            <button mat-icon-button (click)="openBottomSheet()" color="warn" class="large">
-                <mat-icon class="material-symbols-outlined" inline="true">mark_unread_chat_alt</mat-icon>
-            </button>
-        }
-     </div>
     <!-- CREATE NEW ROOM -->
     <form class="new-room"[formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
         <div>

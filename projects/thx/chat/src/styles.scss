@@ -169,15 +169,19 @@ thx-rooms {
     overflow: hidden;
     overflow-y: scroll;
     // min-height: 100%;
-    padding: 0 $space;
+    padding: calc($space / 2) $space;
 
     .welcome {
         display: flex;
         flex-direction: row;
         justify-items: center;
-        justify-content: center;
+        justify-content: space-between;
         position: sticky;
         top: $space;
+        width: 100%;
+        & > * {
+            min-width: calc(2 * $space);
+        }
         h4 {
             margin: 0;
             line-height: 1.5;
