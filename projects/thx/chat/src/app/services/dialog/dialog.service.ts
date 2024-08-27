@@ -8,7 +8,8 @@ import { Observable, BehaviorSubject } from 'rxjs';
 export interface DialogAction {
   title: string,
   value: any,
-  focus?: boolean
+  focus?: boolean,
+  warn?: boolean
 }
 
 export interface DialogData {
@@ -22,7 +23,7 @@ export interface DialogData {
 })
 export class DialogService {
 
-  readonly dialog = inject(MatDialog);
+  private readonly dialog = inject(MatDialog);
   dialogData: BehaviorSubject<any> = new BehaviorSubject(null);
 
   constructor() { }
