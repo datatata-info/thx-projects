@@ -201,7 +201,8 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
     // console.log('touchmove', e);
     if (e instanceof TouchEvent && e.touches) {
       // console.log('screen.height', screen.height);
-      // console.log('clientY', e.touches[0].clientY);
+      // console.log('e.touches[0]', e.touches[0]);
+      // TODO: not works well on ios pwa
       const y = e.touches[0].clientY - this.elmBox.top;
       // console.log('y', y);
       // console.log('screen.height - this.elmBox.top', screen.height - this.elmBox.top);
