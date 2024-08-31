@@ -19,6 +19,7 @@ import { Subscription } from 'rxjs';
 })
 export class HelloComponent implements OnInit, OnDestroy {
 
+  version: string = '';
   private certSub: Subscription = new Subscription();
   canEnterChats: boolean = false;
   radarMockData: RadarData[] = MOCK_DATA;
@@ -30,6 +31,7 @@ export class HelloComponent implements OnInit, OnDestroy {
   ){}
 
   ngOnInit(): void {
+    this.version = this.chatService.version;
     console.log('>>>>> hello init...');
     this.certSub = this.chatService.onCertPrepared.subscribe({
       next: (done: boolean) => {

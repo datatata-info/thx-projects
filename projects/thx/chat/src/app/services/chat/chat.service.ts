@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { User, Room, RoomConfig, RoomMessage } from '@thx/socket';
 import { Subject, Subscription } from 'rxjs';
 import { ChatSocketService } from '../chat-socket/chat-socket.service';
+// version
+import { version } from '../../../../../../../package.json';
 
 interface VoiceOverOptions {
   [key: string]: any,
@@ -57,6 +59,10 @@ export class ChatService extends ChatSocketService {
 
   onPushMessage: Subject<PushPayload> = new Subject();
   onPushMessageClick: Subject<any> = new Subject();
+
+  get version(): string {
+    return version;
+  }
 
   constructor(
   ) {

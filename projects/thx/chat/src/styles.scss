@@ -57,6 +57,11 @@ a {
     color: $func-color;
 }
 
+.version {
+    font-size: small;
+    text-align: right;
+}
+
 thx-not-found {
     display: flex;
     flex-direction: column;
