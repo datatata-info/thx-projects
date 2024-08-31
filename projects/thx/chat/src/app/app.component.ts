@@ -12,6 +12,8 @@ import { LocalNotificationsComponent } from './components/local-notifications/lo
 import { User, RoomMessage } from '@thx/socket';
 // rxjs
 import { Subscription } from 'rxjs';
+// inobounce
+// import inobounce from 'inobounce';
 
 
 @Component({
@@ -40,11 +42,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     /* PREVENT iOS bounce effect (elastic scroll no scrollabel element) */
-    document.body.addEventListener('touchmove', (e: TouchEvent) => {
-      // console.log('touchmove', e);
-      e.preventDefault();
-    }, { passive: false });
-    // this.audioService.listenUserEventToActivateContext();
+    // TODO: this prevent all move, even in room to scroll messages, or in stats to scroll, find a solution ;)
+    // added style `overscroll-behavior: none;`
+    // document.body.addEventListener('touchmove', (e: TouchEvent) => {
+    //   // console.log('touchmove', e);
+    //   e.preventDefault();
+    // }, { passive: false });
     const chatOptions = this.chatService.options;
     this.onVoices = this.voiceOverService.voices.subscribe({
       next: (voices: SpeechSynthesisVoice[]) => {
@@ -105,14 +108,7 @@ export class AppComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
 
-    
-    
-    // accept terms
-    // if (!chatOptions.termsApproved) {
-    //   this.router.navigate(['/terms']); // no way ;)
-    // }
-
-    // notifications
+    // internal notifications
     this.onMessageNotification = this.chatService.onMessage.subscribe({
       next: (roomMessage: RoomMessage) => {
         // this.messages.push(message);
@@ -129,13 +125,4 @@ export class AppComponent implements OnInit, OnDestroy {
     this.onMessageNotification.unsubscribe();
     this.onVoices.unsubscribe();
   }
-
-  // private chooseDefaultVoice(): void {
-  //   const voice = this.voiceOverService.chooseDefaultVoice();
-  //   console.log('chooseDefaultVoice', voice);
-  //   if (voice) {
-  //     this.voiceOverService.selectVoice(voice);
-  //     this.chatService.options.voiceOverOptions.voice = voice.name;
-  //   }
-  // }
 }
