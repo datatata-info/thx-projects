@@ -208,13 +208,12 @@ export class RoomsComponent implements OnInit, OnDestroy {
               title: $localize `Missing message notifications?`,
               content: $localize `@thx/chat needs permission to send notifications. To turn on notifications, click Continue and then Allow when prompted by your browser.`,
               actions: [
-                {title: $localize `Deny`, value: 'deny'},
-                {title: $localize `Allow`, value: 'allow', focus: true}
+                {title: $localize `Continue`, value: 'continue', focus: true}
               ]
             }).subscribe({
               next: (value: any) => {
                 console.log('dialog value', value);
-                if (value === 'allow') {
+                if (value === 'continue') {
                   console.log('Notification.permission', Notification.permission);
                   if (Notification.permission === 'granted') {
                     this.chatService.requestPushNotifications();
