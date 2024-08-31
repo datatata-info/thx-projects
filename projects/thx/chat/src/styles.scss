@@ -39,6 +39,8 @@ html, body, thx-root {
     font-size: large;
     overflow: hidden;
     position: relative;
+    overscroll-behavior: none;
+   //  -webkit-overflow-scrolling: touch;
 }
 
 
