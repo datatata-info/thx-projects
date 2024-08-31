@@ -29,6 +29,7 @@ export interface PushPayload {
 
 const CHAT_OPTIONS_STORAGE_NAME: string = 'thx-chat-options';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -54,6 +55,9 @@ export class ChatService extends ChatSocketService {
 
   lastRoute: string = '/chat';
 
+  onPushMessage: Subject<PushPayload> = new Subject();
+  onPushMessageClick: Subject<any> = new Subject();
+
   constructor(
   ) {
     super();
@@ -62,6 +66,7 @@ export class ChatService extends ChatSocketService {
     this.onPush.subscribe({
       next: (payload: PushPayload) => {
         console.log('PUSH PAYLOAD', payload);
+        this.onPushMessage.next(payload); // subscribe to eg. play sound
         return; // DO NOTHING WHEN APP IS ACTIVE
         // TODO: play sound?, speak?
         // this.swPush.subscription.pipe()
@@ -80,6 +85,8 @@ export class ChatService extends ChatSocketService {
     this.onPushClick.subscribe({
       next: (value: any) => {
         console.log('PUSH CLICK', value);
+        this.onPushMessageClick.next(value);
+        return;
       }
     })
 
