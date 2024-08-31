@@ -205,8 +205,8 @@ export class RoomsComponent implements OnInit, OnDestroy {
           } else {
             // ask user to accept push
             this.dialogService.openDialog({
-              title: $localize `Notifications`,
-              content: $localize `@thx/chat would like to send you notifications.`,
+              title: $localize `Missing message notifications?`,
+              content: $localize `@thx/chat needs permission to send notifications. To turn on notifications, click Continue and then Allow when prompted by your browser.`,
               actions: [
                 {title: $localize `Deny`, value: 'deny'},
                 {title: $localize `Allow`, value: 'allow', focus: true}
