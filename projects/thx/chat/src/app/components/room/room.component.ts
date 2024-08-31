@@ -214,8 +214,8 @@ export class RoomComponent implements OnInit, OnDestroy {
     // send to room
     // this.chatSocketService.sendMessage(`🌘 Chat closes in ${this.CLOSE_ROOM_IN / 1000} seconds.`, this.room.id);
     const dialogSub: Subscription = this.dialogService.openDialog({
-      title: $localize `Close Chat?`,
-      content: $localize `Would you like to close this chat? Other users will receive a message and be disconnected from the chat in a moment.`,
+      title: $localize `Discard Chat?`,
+      content: $localize `Would you like to discard this chat? Other users will receive a message and be disconnected from the chat in a moment.`,
       actions: [
         { title: $localize `No`, value: 'no', focus: true },
         { title: $localize `Yes`, value: 'yes', warn: true }
