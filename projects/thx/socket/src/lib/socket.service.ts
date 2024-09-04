@@ -70,6 +70,7 @@ export class SocketService {
   public onPublicRoomUpdated: Subject<Room> = new Subject();
   public onError: Subject<ErrorEvent | Error> = new Subject();
   public onUserSet: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
+  public onWrongOptions: Subject<any> = new Subject();
   
   // push service
   private pushService!: PushService;
@@ -105,12 +106,13 @@ export class SocketService {
   
 
   connect(): void {
+    console.log('appOptions', this.appOptions);
     let protocol = this.useEncryption ? 'https' : 'http';
     const url = `${protocol}://${this.socketHost}:${this.socketPort}`;
     this.socket = io(url, {
       path: this.socketPath ? this.socketPath + '/socket.io' : '/socket.io',
       query: {
-        'options': this.appOptions
+        'options': JSON.stringify(this.appOptions)
         // 'appName': this.appName,
         // 'appTitle': this.appTitle
       }
@@ -365,6 +367,10 @@ export class SocketService {
       console.log('socket disconnected');
       this.connected.next(false);
       // this._connected = false; 
+    });
+
+    this.socket.on('wrong_options', () => {
+      this.onWrongOptions.next(true);
     });
 
     this.socket.on('reconnect', () => {
