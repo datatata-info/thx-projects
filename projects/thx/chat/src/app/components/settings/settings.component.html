@@ -61,6 +61,9 @@
             </mat-checkbox>
         </section>
     </div>
+    @if(appVersion) {
+        <div class="app-version">App version: v{{appVersion}}</div>
+    }
     <div class="settings-controls">
         <button mat-flat-button type="submit">OK</button>
     </div>
