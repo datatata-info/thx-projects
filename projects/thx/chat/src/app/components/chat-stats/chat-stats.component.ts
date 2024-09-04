@@ -5,7 +5,8 @@ import {
   AfterViewInit,
   ViewChild,
   ElementRef,
-  Input
+  Input,
+  HostListener
 } from '@angular/core';
 // material
 import { MaterialModule } from '../../modules/material/material.module';
@@ -34,6 +35,19 @@ import { Subscription } from 'rxjs';
   styleUrl: './chat-stats.component.scss'
 })
 export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: ResizeObserverEntry) {
+    // set minHeight on resize;
+    console.log('chat-stats-> window resized');
+    if (this.elm) {
+      this.elmBox = this.elm.nativeElement.getBoundingClientRect();
+      this.statsWidth = this.elmBox.width;
+      console.log('--> elmBox', this.elmBox);
+      // this.minHeight = this.elmBox.height;
+      // console.log('chat-stats->minHeight', this.minHeight);
+    }
+  }
 
   @ViewChild('showMore') showMoreElm!: ElementRef;
   @Input('roomId') forRoomId!: string | undefined;
@@ -86,7 +100,7 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
   
   timerData!: string;
   private elmBox: any;
-  private minHeight!: number;
+  // private minHeight: number = 128;
   private user!: User;
   private room!: Room;
 
@@ -153,7 +167,7 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (this.elm) {
       this.elmBox = this.elm.nativeElement.getBoundingClientRect();
-      this.minHeight = this.elmBox.height;
+      // this.minHeight = this.elmBox.height;
       this.statsWidth = this.elmBox.width;
       console.log('elmBox', this.elmBox);
     }
@@ -206,7 +220,7 @@ export class ChatStatsComponent implements OnInit, AfterViewInit, OnDestroy {
       const y = e.touches[0].clientY - this.elmBox.top;
       // console.log('y', y);
       // console.log('screen.height - this.elmBox.top', screen.height - this.elmBox.top);
-      if ( y < (screen.height - (1.9 * this.elmBox.top)) ) {
+      if ( y < (screen.availHeight - (1.9 * this.elmBox.top)) ) {
         this.elm.nativeElement.style.height = `${y}px`;
       }
     }
