@@ -35,6 +35,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   voiceList: SpeechSynthesisVoice[] = [];
   langVoiceList: SpeechSynthesisVoice[] = [];
   langList: string[] = [];
+  appVersion: string = '';
 
   constructor(
     private voiceOverService: VoiceOverService,
@@ -43,7 +44,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private colorService: ColorService,
     private location: Location,
     private dialogService: DialogService
-  ) {}
+  ) {
+    this.appVersion = this.chatService.version;
+  }
 
   ngOnInit(): void {
     this.chatOptions = this.chatService.options;
