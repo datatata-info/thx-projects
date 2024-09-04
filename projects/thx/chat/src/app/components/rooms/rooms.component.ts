@@ -195,7 +195,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     }
     if (!isDevMode() && this.chatService.options.user && "Notification" in window) {
       console.log('asking for notifications...')
-      const user = this.chatService.options.user;
+      // const user = this.chatService.options.user;
 
       const hasPushSub: Subscription = this.chatService.hasPush().subscribe({
         next: (hasPush: boolean) => {
@@ -204,7 +204,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
             // do nothing
           } else {
             // ask user to accept push
-            this.dialogService.openDialog({
+            const dialogSub: Subscription = this.dialogService.openDialog({
               title: $localize `Missing message notifications?`,
               content: $localize `@thx/chat needs permission to send notifications. To turn on notifications, click Continue and then Allow when prompted by your browser.`,
               actions: [
@@ -230,23 +230,48 @@ export class RoomsComponent implements OnInit, OnDestroy {
                     .catch((e: any) => console.error(e));
                   }
                 }
+                dialogSub.unsubscribe();
               },
               error: (e: any) => console.error(e)
             });
           }
         },
         complete: () => hasPushSub.unsubscribe(),
-        error: (e: any) => console.error(e)
+        error: (e: any) => {
+          console.warn('IF ERROR IS THAT USER NOT EXIST, TRY TO LOGIN USER AGAIN...');
+          console.error(e)
+        }
       });
     }
   }
 
   private sendHelloNotification(): void {
-    const hello = new Notification('@thx/chat', {
-      icon: 'icons/icon-96x96.png',
+    // hellow notification options
+    const options = {
+      icon: 'aicons/icon-96x96.png',
       body: $localize `Welcome ${this.user.nickname}`,
       silent: false
-    });
+    }
+    // Notification constructor is going to be deprecated
+    // try if is still supported
+    try {
+      new Notification('@thx/chat', options);
+    } catch(e: any) {
+    // otherwise, show notification through serviceWorker.registration
+    // see: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
+      console.error(e);
+      // Failed to construct 'Notification': Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration()
+        .then((registration: ServiceWorkerRegistration | undefined) => {
+          if (registration) {
+            console.log('registration', registration);
+            registration.showNotification('@thx/chat', options);
+          }
+        });
+      }
+    }
+
     console.log('sending notification...');
   }
 
