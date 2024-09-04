@@ -1,6 +1,4 @@
 import { Injectable, inject, EnvironmentProviders, isDevMode } from '@angular/core';
-// swPush
-import { SwPush } from '@angular/service-worker';
 // socket
 import { io, Socket } from 'socket.io-client';
 // uuid
@@ -9,15 +7,23 @@ import { v4 as uuidv4 } from 'uuid';
 import { Subject, BehaviorSubject, Subscription, Observable } from 'rxjs';
 // crypto service
 import { CryptoService } from './crypto.service';
+// push service
+import { PushService } from './push.service';
+// interfaces
+import {
+  SocketServerConfig,
+  AppOptions,
+  Room,
+  User,
+  RoomMessage,
+  RoomConfig,
+  SocketCallback,
+  Message,
+  MessageContent
+} from './interfaces';
 
 let HOST: string, PORT: number, USE_ENCRYPTION: boolean, PATH: string;
 
-export interface SocketServerConfig {
-  host: string,
-  path?: string,
-  port: number,
-  useEncryption: boolean
-}
 
 export function provideThxSocket(config: SocketServerConfig): EnvironmentProviders {
   // console.log('provideThxSocket', config);
@@ -27,88 +33,6 @@ export function provideThxSocket(config: SocketServerConfig): EnvironmentProvide
   USE_ENCRYPTION = config.useEncryption;
   const providers: any = [];
   return providers;
-}
-
-export interface Room {
-  id: string,
-  config: RoomConfig,
-  appName: string,
-  admin: string,
-  size: number,
-}
-
-export interface RoomConfig {
-  roomName: string,
-  password: string,
-  timer: number,
-  public: boolean
-}
-
-export interface User {
-  id: string,
-  nickname: string,
-  color?: string,
-  voice?: string
-}
-
-export class User {
-  id!: string;
-  nickname!: string;
-  color?: string;
-  voice?: string;
-
-  constructor(nickname: string, color?: string, voice?: string) {
-    this.id = uuidv4();
-    this.nickname = nickname;
-    this.color = color ? color : '';
-    if (voice) this.voice = voice;
-  }
-}
-
-export interface MessageContent {
-  subject: string | any,
-  sharedSecret?: string
-  // voice?: string
-}
-
-export interface Message {
-  id: string,
-  user: User,
-  time: Date,
-  content: MessageContent,
-  expiry: number
-}
-
-export class Message {
-  id!: string;
-  user!: User;
-  time!: Date;
-  content!: MessageContent;
-  expiry!: number;
-  constructor(user: User, content: MessageContent, expiry?: number) {
-    this.id = uuidv4();
-    this.time = new Date();
-    this.expiry = expiry ? expiry : 60 * 1000;
-    this.user = user;
-    this.content = content;
-  }
-}
-
-export interface RoomMessage {
-  roomId: string,
-  message: Message
-}
-
-interface SocketCallback {
-  success: boolean,
-  message: string,
-  data?: any
-}
-
-interface AppOptions {
-  appName: string,
-  appTitle?: string,
-  appIcon?: string
 }
 
 @Injectable({
@@ -146,18 +70,18 @@ export class SocketService {
   public onPublicRoomUpdated: Subject<Room> = new Subject();
   public onError: Subject<ErrorEvent | Error> = new Subject();
   public onUserSet: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
-  // push notifications
-  public onPush: Observable<any> = new Observable();
-  public onPushClick: Observable<any> = new Observable();
+  
+  // push service
+  private pushService!: PushService;
+  public onPush!: Observable<any>;
+  public onPushClick!: Observable<any>;
 
-  readonly VAPID_PUBLIC_KEY: string = isDevMode() ? 'BPL2xam-UTRIqHD05cG-ZZHJFSrfVaRSz2FDGFXRhGyskNBN6RnxsrzJ09Ld1v0I66dVy57fac3IJRaD6Yqx8PM' : 'BPbN6dLz-JGZunRJymbIhU5PFWeXq6hGSWD6K4e1-pgZEjHsH_llP-OXq6sXVz8eIL0L8pA6cQC10Q5M7hKayus';
-  protected swPush!: SwPush;
   constructor() {
+    // inject services this way to not have a necessity to inject them inside extensions
     this.cryptoService = inject(CryptoService);
-    this.swPush = inject(SwPush);
-    this.onPush = this.swPush.messages;
-    this.onPushClick = this.swPush.notificationClicks;
-
+    this.pushService = inject(PushService);
+    this.onPush = this.pushService.onPush;
+    this.onPushClick = this.pushService.onPushClick;
     // this.swPush.notificationClicks
     if (HOST) this.socketHost = HOST;
     if (PORT) this.socketPort = PORT;
@@ -178,32 +102,7 @@ export class SocketService {
       });
     }
   }
-
   
-
-  private subscribeNotifications(): Subject<PushSubscription | null> {
-    const subject: Subject<PushSubscription | null> = new Subject();
-    console.log('........subscribeNotifications........');
-    if (this.swPush.isEnabled) {
-      this.swPush.requestSubscription({
-        serverPublicKey: this.VAPID_PUBLIC_KEY
-      })
-      .then((sub: PushSubscription) => {
-        subject.next(sub);
-        subject.complete();
-      })
-      .catch((e: any) => {
-        subject.next(null);
-        subject.complete();
-        console.error('PushSubscribption Error', e);
-      });
-    } else {
-      console.log('notifications not enabled || isDevMode');
-      subject.next(null);
-      subject.complete();
-    }
-    return subject;
-  }
 
   connect(): void {
     let protocol = this.useEncryption ? 'https' : 'http';
@@ -233,49 +132,6 @@ export class SocketService {
   logout(): void {
     console.warn('add logout to server...');
     this.socket.emit('logout', this.user);
-  }
-
-  hasPush(): Subject<boolean> {
-    const subject: Subject<boolean> = new Subject();
-    if (this.user && this.user.id) {
-      this.socket.emit('has_push', this.user.id, (result: any) => {
-        if (result.success) {
-          subject.next(result.push); // can be true or false
-          subject.complete();
-        } else {
-          console.error(result.message);
-          subject.error(result.message);
-          subject.complete();
-        }
-      });
-    } else {
-      console.error('No user defined');
-      subject.error('No user defined');
-      subject.complete();
-    }
-    return subject;
-  }
-
-  requestPushNotifications(): void {
-    console.warn('subsribeNotifications for user', this.user);
-    // create swPush Subscription
-    if (!isDevMode()) {
-      const pushSub: Subscription = this.subscribeNotifications().subscribe({
-        next: (sub: PushSubscription | null) => {
-          // if subscribtion, then send with login
-          console.log('!!!!! push subsbscribtion', sub);
-          if (sub && sub.endpoint) { // no endpoint in Safari
-            console.log('subscribe_push', 'TODO on server');
-            this.socket.emit('subscribe_push', this.user, sub);
-          } 
-          pushSub.unsubscribe();
-        },
-        error: (e: any) => {
-          pushSub.unsubscribe();
-          console.error('PushSubscribtion Error', e);
-        }
-      })
-    } 
   }
 
   getAvailableRooms(): void {
@@ -483,6 +339,18 @@ export class SocketService {
     this.socket.emit('handshake', roomId, this.user.id, this.cryptoService.getPublicKeyPem());
   }
 
+  // push
+  hasPush(): Subject<boolean> {
+    return this.pushService.hasPush(this.user, this.socket);
+  }
+  // request push
+  requestPushNotifications(): void {
+    this.pushService.requestPushNotifications(this.user, this.socket);
+  }
+
+  isSwUpdate(): Subject<any> {
+    return this.pushService.isSwUpdate();
+  }
   
 
   private setupSocketListeners(): void {
