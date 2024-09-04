@@ -43,11 +43,16 @@ export interface ColorScheme {
   templateUrl: './radar.component.html',
   styleUrl: './radar.component.scss'
 })
-export class RadarComponent implements OnInit, AfterViewInit, OnDestroy {
+export class RadarComponent implements AfterViewInit, OnDestroy {
 
   @Input('size') set size(size: number) {
     this._size = size;
+    if (this.svgElm) {
+      // this.log('svgElm on data set', this.svgElm);
+      this.initRadar();
+    }
   };
+
   private _size: number = 360;
   get size(): number {
     return this._size;
@@ -73,28 +78,32 @@ export class RadarComponent implements OnInit, AfterViewInit, OnDestroy {
   get data(): RadarData[] {
     return this._data;
   }
+
+
+  get config(): any {
+    return {
+      w: this.size,				//Width of the circle
+      h: this.size,				//Height of the circle
+      margin: { top: 20, right: 20, bottom: 20, left: 20 }, // The margins of the SVG
+      levels: 4,				// How many levels or inner circles should there be drawn
+      maxValue: 0, 			// What is the value that the biggest circle will represent
+      labelFactor: 1.25, 	// How much farther than the radius of the outer circle should the labels be placed
+      wrapWidth: 60, 		// The number of pixels after which a label needs to be given a new line
+      opacityArea: 0.35, 	// The opacity of the area of the blob
+      dotRadius: 4, 			// The size of the colored circles of each blog
+      opacityCircles: 0.0, 	// The opacity of the circles of each blob
+      strokeWidth: 1, 		// The width of the stroke around each blob
+      roundStrokes: false,	// If true the area and stroke will follow a round path (cardinal-closed)
+      color: d3.scaleOrdinal(this.colorScheme.colors),	// Color function
+      showLabels: true
+    }
+  }
+
   private _data: RadarData[] = [];
   private radarInitialized: boolean = false;
   private get id(): string {
     return uuidv4();
   }
-
-  config: any = {
-    w: this.size,				//Width of the circle
-    h: this.size,				//Height of the circle
-    margin: { top: 20, right: 20, bottom: 20, left: 20 }, // The margins of the SVG
-    levels: 4,				// How many levels or inner circles should there be drawn
-    maxValue: 0, 			// What is the value that the biggest circle will represent
-    labelFactor: 1.25, 	// How much farther than the radius of the outer circle should the labels be placed
-    wrapWidth: 60, 		// The number of pixels after which a label needs to be given a new line
-    opacityArea: 0.35, 	// The opacity of the area of the blob
-    dotRadius: 4, 			// The size of the colored circles of each blog
-    opacityCircles: 0.0, 	// The opacity of the circles of each blob
-    strokeWidth: 1, 		// The width of the stroke around each blob
-    roundStrokes: false,	// If true the area and stroke will follow a round path (cardinal-closed)
-    color: d3.scaleOrdinal(this.colorScheme.colors),	// Color function
-    showLabels: true
-  };
 
   private maxValue: number = 0;
   private allAxis!: string[];
@@ -108,20 +117,10 @@ export class RadarComponent implements OnInit, AfterViewInit, OnDestroy {
     private elm: ElementRef
   ) { }
 
-  ngOnInit(): void {
-   //  this.log('SIZE', this.size);
-    this.config.w = this.size;
-    this.config.h = this.size;
-    // this.log('radar data', this._data);
-    // this.initRadar();
-  }
+  // ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     if (this.svgElm && this._data.length && !this.radarInitialized) {
-      this.elm.nativeElement.style.width = `${this.size}px`;
-      this.elm.nativeElement.style.height = `${this.size}px`;
-      this.svgElm.nativeElement.style.width = `${this.size}px`;
-      this.svgElm.nativeElement.style.height = `${this.size}px`;
       this.log('svgElm after view init', this.svgElm);
       this.initRadar();
     }
@@ -132,8 +131,18 @@ export class RadarComponent implements OnInit, AfterViewInit, OnDestroy {
 
   }
 
+  private setElmSizes(): void {
+    this.elm.nativeElement.style.width = `${this.size}px`;
+    this.elm.nativeElement.style.height = `${this.size}px`;
+    this.svgElm.nativeElement.style.width = `${this.size}px`;
+    this.svgElm.nativeElement.style.height = `${this.size}px`;
+  }
+
   private initRadar(): void {
     this.log('INIT RADAR');
+    this.setElmSizes();
+    // this.config.w = this.size;
+    // this.config.h = this.size;
     // console.log('data', this._data);
     for (const dataItem of this._data) {
       for (const item of dataItem.items) {
