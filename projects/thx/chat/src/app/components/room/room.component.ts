@@ -177,7 +177,7 @@ export class RoomComponent implements OnInit, OnDestroy {
     if (!this.notifications) {
       const dialogSub: Subscription = this.dialogService.openDialog({
         title: $localize `Leave Chat?`,
-        content: $localize `You are going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`,
+        content: $localize `Are you going to leave the chat permanently? If you want to receive notifications, turn notifications for this chat on before leaving.`,
         actions: [
           {title: $localize `Leave`, value: 'leave'}
         ]
@@ -201,12 +201,24 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   unsubscribeRoom(): void{
     if (this.room) {
-      if (this.chatService.confirmQuestion($localize `You are about to leave the chat permanently. If you want to stay subscribed and receive notifications, use the arrow on the left.`)) {
-        this.chatService.unsubscribeRoom(this.room.id);
-        this.notifications = false;
-        // this.chatService.sendByeAndLeaveRoom(this.room.id);
-        this.router.navigate(['/chat']);
-      }
+      const room = this.room;
+      const dialogSub: Subscription = this.dialogService.openDialog({
+        title: $localize `Leave chat?`,
+        content: $localize `You are about to leave the chat permanently. If you want to stay subscribed and receive notifications, use the arrow on the left instead.`,
+        actions: [
+          { title: $localize `Leave`, value: 'leave' }
+        ]
+      }).subscribe({
+        next: (value: string) => {
+          if (value === 'leave') {
+            this.chatService.unsubscribeRoom(room.id);
+            this.notifications = false;
+            // this.chatService.sendByeAndLeaveRoom(this.room.id);
+            this.router.navigate(['/chat']);
+          }
+          dialogSub.unsubscribe();
+        }
+      });
     }
   }
 
