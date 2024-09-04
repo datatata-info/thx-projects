@@ -6,6 +6,7 @@ import { EmojiService } from './services/emoji/emoji.service';
 import { ColorService } from './services/color/color.service';
 import { ChatService } from './services/chat/chat.service';
 import { VoiceOverService } from './services/voice-over/voice-over.service';
+import { DialogData, DialogService } from './services/dialog/dialog.service';
 // components
 import { LocalNotificationsComponent } from './components/local-notifications/local-notifications.component';
 // models
@@ -37,18 +38,38 @@ export class AppComponent implements OnInit, OnDestroy {
     private colorService: ColorService,
     private chatService: ChatService,
     private voiceOverService: VoiceOverService,
+    private dialogService: DialogService
     // private audioService: AudioService
   ){}
 
   ngOnInit(): void {
-    /* PREVENT iOS bounce effect (elastic scroll no scrollabel element) */
-    // TODO: this prevent all move, even in room to scroll messages, or in stats to scroll, find a solution ;)
-    // added style `overscroll-behavior: none;`
-    // document.body.addEventListener('touchmove', (e: TouchEvent) => {
-    //   // console.log('touchmove', e);
-    //   e.preventDefault();
-    // }, { passive: false });
+    // if new sw version available, update by reload
+    const updateSub: Subscription = this.chatService.isSwUpdate().subscribe({
+      next: (update: boolean) => {
+        if (update) {
+          const dialogData: DialogData = {
+            title: 'Update available',
+            content: 'New update available. Do you want to reload the app to take effect?',
+            actions: [
+              { title: 'Reload', value: 'reload', focus: true }
+            ]
+          }
+          const dialogSub: Subscription = this.dialogService.openDialog(dialogData).subscribe({
+            next: (value: string) => {
+              if (value === 'reload') {
+                window.location.reload();
+              }
+              dialogSub.unsubscribe();
+            }
+          });
+        }
+      },
+      complete: () => updateSub.unsubscribe()
+    })
+    
+    // app options
     const chatOptions = this.chatService.options;
+    
     this.onVoices = this.voiceOverService.voices.subscribe({
       next: (voices: SpeechSynthesisVoice[]) => {
         if (voices.length) {
