@@ -41,6 +41,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ){}
 
   ngOnInit(): void {
+    this.chatService.userIsActive();
     // if new sw version available, update by reload
     const updateSub: Subscription = this.chatService.isSwUpdate().subscribe({
       next: (update: boolean) => {
