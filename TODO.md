@@ -1,2 +1,4 @@
 - localisation, see: https://lokalise.com/blog/angular-i18n/
+    - translate
 - pwa (setup + install logic)
+    - install button (see https://web.dev/learn/pwa/installation-prompt)
