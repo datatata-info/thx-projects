@@ -189,11 +189,11 @@ export class SocketService {
   }
 
   userIsActive(): void {
-    this.socket.emit('user_active', this.user.id);
+    if (this.user) this.socket.emit('user_active', this.user.id);
   }
 
   userIsNotActive(): void {
-    this.socket.emit('user_not_active', this.user.id);
+    if (this.user) this.socket.emit('user_not_active', this.user.id);
   }
 
   // disconnect(): void {
