@@ -33,13 +33,11 @@ export class AppComponent implements OnInit, OnDestroy {
   addNotification: RoomMessage | null = null;
 
   constructor(
-    // private chatSocketService: ChatSocketService,
     private emojiService: EmojiService,
     private colorService: ColorService,
     private chatService: ChatService,
     private voiceOverService: VoiceOverService,
     private dialogService: DialogService
-    // private audioService: AudioService
   ){}
 
   ngOnInit(): void {
