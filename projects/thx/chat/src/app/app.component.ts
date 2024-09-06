@@ -138,10 +138,14 @@ export class AppComponent implements OnInit, OnDestroy {
       error: (e: any) => console.error(e)
     });
     
+    window.addEventListener('beforeunload', (event: Event) => {
+      this.chatService.userIsNotActive();
+    });
   }
 
   ngOnDestroy(): void {
     this.onMessageNotification.unsubscribe();
     this.onVoices.unsubscribe();
+    this.chatService.userIsNotActive(); // deactivate on close
   }
 }
