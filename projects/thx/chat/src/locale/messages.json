@@ -37,13 +37,10 @@
     "5600428588615280222": "Enter Chat",
     "1069448673992177374": "Search Public Chats...",
     "3000960814411330214": "🫣",
-    "4411842236392776639": "Missing message notifications?",
-    "4269465937453692035": "@thx/chat needs permission to send notifications. To turn on notifications, click Continue and then Allow when prompted by your browser.",
-    "6962699013778688473": "Continue",
-    "464930630571103874": "Welcome {$PH}",
     "4930506384627295710": "Settings",
     "8754093039384770681": "Nickname: ",
     "5817350616201369494": "Color: ",
+    "4395623594916426345": " Notifications: ",
     "3882812759595680291": "VoiceOver Language",
     "1750555739180809831": "Voice",
     "4264101564268313204": "Reset Options",
@@ -87,6 +84,10 @@
     "8122109390137943586": "7. Changes to Privacy Policy",
     "8897357069954348372": "We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on our website. You are advised to review this Privacy Policy periodically for any changes.",
     "4864034468361497723": "8. Contact Us",
-    "6788116554602915626": "If you have any questions about these Terms or Privacy Policy, please contact us at [xvjavurek💫vutbr💥cz]."
+    "6788116554602915626": "If you have any questions about these Terms or Privacy Policy, please contact us at [xvjavurek💫vutbr💥cz].",
+    "4411842236392776639": "Missing message notifications?",
+    "4269465937453692035": "@thx/chat needs permission to send notifications. To turn on notifications, click Continue and then Allow when prompted by your browser.",
+    "6962699013778688473": "Continue",
+    "464930630571103874": "Welcome {$PH}"
   }
 }
