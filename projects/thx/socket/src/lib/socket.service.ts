@@ -188,6 +188,14 @@ export class SocketService {
     return subject;
   }
 
+  userIsActive(): void {
+    this.socket.emit('user_active', this.user.id);
+  }
+
+  userIsNotActive(): void {
+    this.socket.emit('user_not_active', this.user.id);
+  }
+
   // disconnect(): void {
   //   console.log('disconnecting user', this.user);
   //   this.socket.emit('close', this.user.id);
@@ -343,11 +351,25 @@ export class SocketService {
 
   // push
   hasPush(): Subject<boolean> {
-    return this.pushService.hasPush(this.user, this.socket);
+    this.pushService.userHasPush(this.user, this.socket);
+    return this.pushService.hasPush;
   }
   // request push
   requestPushNotifications(): void {
     this.pushService.requestPushNotifications(this.user, this.socket);
+  }
+
+  unsubscribePushNotifications(): void {
+    const unsubSub: Subscription = this.pushService.unsubscribePushNotifications(this.user, this.socket).subscribe({
+      next: (message: string) => {
+        console.log('unsubscribePushNotifications', message);
+      },
+      error: (e: any) => {
+        console.error('unsubscribePushNotifications', e);
+        this.onError.next(e);
+      },
+      complete: () => unsubSub.unsubscribe()
+    });
   }
 
   isSwUpdate(): Subject<any> {

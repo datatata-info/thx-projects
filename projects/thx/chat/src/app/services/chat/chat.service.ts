@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { User, Room, RoomConfig, RoomMessage } from '@thx/socket';
-import { Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { ChatSocketService } from '../chat-socket/chat-socket.service';
 // version
 import { version } from '../../../../../../../package.json';
@@ -94,7 +94,21 @@ export class ChatService extends ChatSocketService {
         this.onPushMessageClick.next(value);
         return;
       }
-    })
+    });
+
+    // In your Angular component or a service
+    document.addEventListener('visibilitychange', (event: any) => {
+      console.log('visibilitychange', event);
+      if (document.visibilityState === 'visible') {
+        console.log('App is active');
+        this.userIsActive();
+        // Handle when app is active (in the foreground)
+      } else {
+        console.log('App is inactive');
+        this.userIsNotActive();
+        // Handle when app is inactive (in the background)
+      }
+    });
 
   }
 
@@ -223,6 +237,100 @@ export class ChatService extends ChatSocketService {
 
   confirmQuestion(question: string): boolean {
     return confirm(question);
+  }
+
+  handlePushNotifications(dialogService: any): void {
+    console.log('chat.service handle push notifications');
+    if (!("Notification" in window)) {
+      console.warn('This browser does not support notifications.');
+      console.log('window', window);
+    }
+    if (!isDevMode() && this.options.user && "Notification" in window) {
+      console.log('asking for notifications...')
+      // const user = this.chatService.options.user;
+
+      const hasPushSub: Subscription = this.hasPush().subscribe({
+        next: (hasPush: boolean) => {
+          console.log('user hasPush? in chat.service', hasPush);
+          if (hasPush) {
+            // do nothing
+          } else {
+            // ask user to accept push
+            const dialogSub: Subscription = dialogService.openDialog({
+              title: $localize `Missing message notifications?`,
+              content: $localize `@thx/chat needs permission to send notifications. To turn on notifications, click Continue and then Allow when prompted by your browser.`,
+              actions: [
+                {title: $localize `Continue`, value: 'continue', focus: true}
+              ]
+            }).subscribe({
+              next: (value: any) => {
+                console.log('dialog value', value);
+                if (value === 'continue') {
+                  console.log('Notification.permission', Notification.permission);
+                  if (Notification.permission === 'granted') {
+                    this.requestPushNotifications();
+                    this.sendHelloNotification();
+                  }
+                  if (Notification.permission === 'denied' || Notification.permission === 'default') {
+                    Notification.requestPermission()
+                    .then((permission: NotificationPermission) => {
+                      if (permission === 'granted') {
+                        this.requestPushNotifications();
+                        this.sendHelloNotification();
+                      }
+                    })
+                    .catch((e: any) => console.error(e));
+                  }
+                }
+                dialogSub.unsubscribe();
+              },
+              error: (e: any) => {
+                console.error(e);
+                dialogSub.unsubscribe();
+              }
+            });
+          }
+          hasPushSub.unsubscribe();
+        },
+        complete: () => hasPushSub.unsubscribe(),
+        error: (e: any) => {
+          console.warn('IF ERROR IS THAT USER NOT EXIST, TRY TO LOGIN USER AGAIN...');
+          console.error(e);
+          hasPushSub.unsubscribe();
+        }
+      });
+    }
+  }
+
+  private sendHelloNotification(): void {
+    // hellow notification options
+    const options = {
+      icon: 'icons/icon-192x192.png',
+      badge: 'icons/icon-72x72.png',
+      body: $localize `Welcome ${this.user.nickname}`,
+      silent: false
+    }
+    // Notification constructor is going to be deprecated
+    // try if is still supported
+    try {
+      new Notification('@thx/chat', options);
+    } catch(e: any) {
+    // otherwise, show notification through serviceWorker.registration
+    // see: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/showNotification
+      console.error(e);
+      // Failed to construct 'Notification': Illegal constructor. Use ServiceWorkerRegistration.showNotification() instead.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration()
+        .then((registration: ServiceWorkerRegistration | undefined) => {
+          if (registration) {
+            console.log('registration', registration);
+            registration.showNotification('@thx/chat', options);
+          }
+        });
+      }
+    }
+
+    console.log('sending notification...');
   }
 
 }

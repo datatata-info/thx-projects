@@ -13,7 +13,7 @@ import { ColorService } from '../../services/color/color.service';
 import { EmojiService } from '../../services/emoji/emoji.service';
 import { DialogService, DialogData } from '../../services/dialog/dialog.service';
 // rxjs
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
 
 @Component({
   selector: 'thx-settings',
@@ -32,10 +32,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
   chatOptions!: ChatOptions;
 
   private voicesSub: Subscription = new Subscription();
+  private hasPushSub: Subscription = new Subscription();
   voiceList: SpeechSynthesisVoice[] = [];
   langVoiceList: SpeechSynthesisVoice[] = [];
   langList: string[] = [];
   appVersion: string = '';
+  hasPush: boolean = false;
 
   constructor(
     private voiceOverService: VoiceOverService,
@@ -49,8 +51,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // push notifications
+    this.hasPushSub = this.chatService.hasPush().subscribe({
+      next: (hasPush: boolean) => {
+        // console.log('hasPush???', hasPush);
+        this.hasPush = hasPush;
+      },
+      error: (e: any) => console.error(e)
+    });
+    // get chat options
     this.chatOptions = this.chatService.options;
-
+    // set settings form
     this.settingsForm = new FormGroup({
       nickname: new FormControl(this.chatOptions.user?.nickname),
       color: new FormControl(this.chatOptions.user?.color),
@@ -60,6 +71,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
       termsApproved: new FormControl(this.chatOptions.termsApproved)
     });
     console.log('SETTINGS FORM', this.settingsForm.value);
+    // voice 
     this.voicesSub = this.voiceOverService.voices.subscribe({
       next: (voices: SpeechSynthesisVoice[]) => {
         console.log('voices', voices);
@@ -81,6 +93,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
       },
       error: (e: any) => console.error(e)
     })
+  }
+
+  ngOnDestroy(): void {
+    this.voicesSub.unsubscribe();
+    this.hasPushSub.unsubscribe();
   }
 
   testSpeak(voiceName: any): void {
@@ -105,9 +122,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // console.log('langVoiceList', this.langVoiceList);
   }
 
-  ngOnDestroy(): void {
-    this.voicesSub.unsubscribe();
-  }
+  
 
   reNickName(): void {
     this.settingsForm.controls['nickname'].setValue(this.emojiService.getRandomAnimalNature());
@@ -120,6 +135,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
     );
     console.log('reColor', colors);
     this.settingsForm.controls['color'].setValue(colors[0]);
+  }
+
+  // userHasPush(): Subject<boolean> {
+  //   return this.chatService.hasPush();
+  // }
+
+  handlePushNotifications(): void {
+    console.log('request push from settings.component');
+    this.chatService.handlePushNotifications(this.dialogService);
+  }
+
+  unsubscribePushNotifications(): void {
+    this.chatService.unsubscribePushNotifications();
+    // this.hasPush = false; // should fire hasPushSub
   }
 
   saveSttings(): void {

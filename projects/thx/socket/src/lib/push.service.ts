@@ -4,7 +4,7 @@ import { SwPush, SwUpdate } from '@angular/service-worker';
 // rxjs
 import { Observable, Subject, Subscription } from 'rxjs';
 // user
-import { User } from './interfaces';
+import { SocketCallback, User } from './interfaces';
 // socket
 import { Socket } from 'socket.io-client';
 
@@ -20,6 +20,7 @@ export class PushService {
   // push notifications
   public onPush: Observable<any> = new Observable();
   public onPushClick: Observable<any> = new Observable();
+  public hasPush: Subject<any> = new Subject();
 
   // protected swPush!: SwPush;
   constructor(
@@ -39,23 +40,24 @@ export class PushService {
     return subject;
   }
 
-  hasPush(user: User, socket: Socket): Subject<boolean> {
+  userHasPush(user: User, socket: Socket): Subject<boolean> {
     const subject: Subject<boolean> = new Subject();
     if (user && user.id) {
       socket.emit('has_push', user.id, (result: any) => {
         if (result.success) {
           subject.next(result.push); // can be true or false
-          subject.complete();
+          this.hasPush.next(result.push);
+          // subject.complete();
         } else {
           console.error(result.message);
           subject.error(result.message);
-          subject.complete();
+          // subject.complete();
         }
       });
     } else {
       console.error('No user defined');
       subject.error('No user defined');
-      subject.complete();
+      // subject.complete();
     }
     return subject;
   }
@@ -71,6 +73,7 @@ export class PushService {
           if (sub && sub.endpoint) { // no endpoint in Safari
             console.log('subscribe_push', 'TODO on server');
             socket.emit('subscribe_push', user, sub);
+            this.hasPush.next(true);
           } 
           pushSub.unsubscribe();
         },
@@ -80,6 +83,28 @@ export class PushService {
         }
       })
     } 
+  }
+
+  unsubscribePushNotifications(user: User, socket: Socket): Subject<any> {
+    const subject: Subject<any> = new Subject();
+    this.swPush.unsubscribe()
+    .then(() => {
+      socket.emit('unsubscribe_push', user.id, (result: SocketCallback) => {
+        if (result.success) {
+          subject.next(result.message);
+          subject.complete();
+          this.hasPush.next(false);
+        } else {
+          subject.error(result.message);
+          subject.complete();
+        }
+      });
+    })
+    .catch((e: any) => {
+      subject.error(e);
+      subject.complete();
+    });
+    return subject;
   }
 
   private subscribeNotifications(): Subject<PushSubscription | null> {
