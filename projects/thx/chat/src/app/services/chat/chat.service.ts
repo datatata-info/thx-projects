@@ -2,6 +2,8 @@ import { Injectable, isDevMode } from '@angular/core';
 import { User, Room, RoomConfig, RoomMessage } from '@thx/socket';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { ChatSocketService } from '../chat-socket/chat-socket.service';
+import { ColorService } from '../color/color.service';
+import { EmojiService } from '../emoji/emoji.service';
 // version
 import { version } from '../../../../../../../package.json';
 
@@ -65,6 +67,8 @@ export class ChatService extends ChatSocketService {
   }
 
   constructor(
+    private colorService: ColorService,
+    private emojiService: EmojiService
   ) {
     super();
     this.options = this.getOptionsFromStorage();
@@ -110,6 +114,21 @@ export class ChatService extends ChatSocketService {
       }
     });
 
+  }
+
+  createUser(): User {
+    const colors = this.colorService.generateHslaColors(
+      this.colorService.randomIntFromInterval(40, 90),
+      this.colorService.randomIntFromInterval(30, 60)
+    );
+    this.user = new User(
+      this.emojiService.getRandomAnimalNature(),
+      colors[0],
+      this.options.voiceOverOptions.voice
+    );
+    this.options.user = this.user;
+    this.updateOptions();
+    return this.user;
   }
 
   private getOptionsFromStorage(): ChatOptions {

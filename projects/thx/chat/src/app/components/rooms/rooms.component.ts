@@ -91,6 +91,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.chatService.getAvailableRooms();
     if (!this.chatService.options.user) {
       console.warn('NO USER? :(');
+      this.user = this.chatService.createUser();
       // this.nickname = this.animalService.getRandomAnimal();
       // // this.chatMqttService.nickname = this.nickname;
       // console.log('set nickname', this.nickname);
