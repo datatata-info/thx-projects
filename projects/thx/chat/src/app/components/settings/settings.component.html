@@ -27,14 +27,17 @@
             <mat-icon color="primary" class="material-symbols-outlined">refresh</mat-icon>
         </button>
     </div>
-    <div class="notifications">
-        <span i18n> Notifications: </span>
-        @if(hasPush) {
-            <button mat-flat-button (click)="unsubscribePushNotifications()" type="button">Unsubscribe</button>
-        } @else {
-            <button mat-flat-button (click)="handlePushNotifications()" type="button">Subscribe</button>
-        }
-    </div>
+    <!-- show only if notifications are supported by the browser -->
+    @if(notificationsSupported()) {
+        <div class="notifications">
+            <span i18n> Notifications: </span>
+            @if(hasPush) {
+                <button mat-flat-button (click)="unsubscribePushNotifications()" type="button">Unsubscribe</button>
+            } @else {
+                <button mat-flat-button (click)="handlePushNotifications()" type="button">Subscribe</button>
+            }
+        </div>
+    }
     <div class="voice-over">
         <section>
             <mat-checkbox formControlName="voiceOver">VoiceOver</mat-checkbox>

@@ -141,6 +141,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   //   return this.chatService.hasPush();
   // }
 
+  notificationsSupported(): boolean {
+    return ('Notification' in window);
+  }
+
   handlePushNotifications(): void {
     console.log('request push from settings.component');
     this.chatService.handlePushNotifications(this.dialogService);
