@@ -86,5 +86,6 @@ export interface Room {
   export interface AppOptions {
     appName: string,
     appTitle?: string,
-    appIcon?: string
+    appIcon?: string,
+    badge?: string
   }

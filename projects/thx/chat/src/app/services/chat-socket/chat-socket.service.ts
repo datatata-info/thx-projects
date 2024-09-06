@@ -18,7 +18,8 @@ export class ChatSocketService extends SocketService {
     this.appOptions = {
       appName: 'thx-chat',
       appTitle: '@thx/chat',
-      appIcon: 'icons/icon-96x96.png'
+      appIcon: 'icons/icon-192x192.png',
+      badge: 'icons/icon-72x72.png'
     }
     this.connect();
     // console.log('...subscribe cert');
