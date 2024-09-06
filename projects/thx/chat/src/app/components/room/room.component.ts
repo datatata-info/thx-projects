@@ -60,6 +60,7 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.warn('🚀 Room init');
+    this.chatService.userIsActive();
     this.voiceOver = this.chatService.options.voiceOver;
     // this.messages = []; // TODO: (on router navigate) reset messages (from notification)
     

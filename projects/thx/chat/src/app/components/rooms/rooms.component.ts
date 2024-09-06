@@ -75,6 +75,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     console.log('-----rooms init-----');
+    this.chatService.userIsActive();
     // this.socketConnected = this.chatSocketService.connected;
     this.onSocketConnectionChange = this.chatService.connected.subscribe({
       next: (connected: boolean) => {
