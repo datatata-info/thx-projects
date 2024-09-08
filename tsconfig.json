@@ -8,14 +8,8 @@
       "@thx/charts": [
         "./dist/thx/charts"
       ],
-      "@thx/dtmqtt": [
-        "./dist/thx/dtmqtt"
-      ],
       "@thx/socket": [
         "./dist/thx/socket"
-      ],
-      "dtmqtt": [
-        "./dist/dtmqtt"
       ]
     },
     "strict": true,
