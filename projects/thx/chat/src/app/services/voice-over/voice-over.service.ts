@@ -16,6 +16,7 @@ export class VoiceOverService {
   selectedLanguage: string = 'en-US';
   voices: BehaviorSubject<SpeechSynthesisVoice[]> = new BehaviorSubject(this._voices);
   userLang: string = navigator.language;
+  activated: boolean = false;
 
   constructor() {
     this.getVoices();
@@ -31,6 +32,13 @@ export class VoiceOverService {
     } else { // else select directly
       this.voices.next(this._voices);
       this.selectedVoice = this.chooseDefaultVoice();
+    }
+  }
+
+  toggleActivation(): void {
+    this.activated = !this.activated;
+    if (this.activated) {
+      this.speak($localize `Voice Over activated`);
     }
   }
 
@@ -73,7 +81,7 @@ export class VoiceOverService {
     const u: SpeechSynthesisUtterance = new SpeechSynthesisUtterance(utterance);
     console.log('voice', this.selectedVoice);
     if (this.selectedVoice) u.voice = this.selectedVoice;
-    this.synth.speak(u);
+    if (this.activated) this.synth.speak(u);
     return new Promise((resolve: any) => {
       const check = () => {
         if (this.isSpeaking()) {

@@ -98,21 +98,6 @@ export class AppComponent implements OnInit, OnDestroy {
             }
           }
           if (!chatOptions.user) {
-            /* const colors = this.colorService.generateHslaColors(
-              this.colorService.randomIntFromInterval(40, 90),
-              this.colorService.randomIntFromInterval(30, 60)
-            );
-            this.user = new User(
-              this.emojiService.getRandomAnimalNature(),
-              colors[0],
-              chatOptions.voiceOverOptions.voice
-            );
-            // CREATE AND LOGIN USER EVERY NEW SESSION
-            // console.log('USER WITH COLOR', this.user);
-
-            // set user in chat options
-            this.chatService.options.user = this.user;
-            this.chatService.updateOptions(); */
             this.user = this.chatService.createUser();
             console.log('chatService.options', this.chatService.options);
           } else {

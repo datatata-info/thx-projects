@@ -76,17 +76,19 @@
                 inline="true"
             >record_voice_over</mat-icon>
         </button>
-        <button mat-icon-button class="large" (click)="toggleNotifications()">
+        <span class="spacer"></span>
+        <!-- COPY LINK -->
+        <button mat-icon-button class="large" (click)="copyChatLinkToClipboard()">
+            <mat-icon color="primary" class="material-symbols-outlined" inline="true">ios_share</mat-icon>
+        </button>
+        <span class="spacer"></span>
+        <button mat-icon-button class="large" (click)="handlePushNotifications()">
             <mat-icon
-                [ngStyle]="{opacity: notifications ? 1.0 : 0.5}"
+                [ngStyle]="{opacity: userHasPush ? 1.0 : 0.5}"
                 color="primary"
                 class="material-symbols-outlined"
                 inline="true"
             >notifications</mat-icon>
-        </button>
-        <span class="spacer"></span>
-        <button mat-icon-button class="large" (click)="copyChatLinkToClipboard()">
-            <mat-icon color="primary" class="material-symbols-outlined" inline="true">ios_share</mat-icon>
-        </button>
+        </button>        
     </div>
 }

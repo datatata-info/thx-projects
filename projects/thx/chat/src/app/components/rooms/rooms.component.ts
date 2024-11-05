@@ -113,7 +113,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
           // handle push notifications
           console.log('request push from rooms.component');
           // this.handlePushNotifications();
-          if (!this.subscribePusheAsked) {
+          if (!this.subscribePusheAsked && this.chatService.pushNotificationsAvailable()) {
             this.chatService.handlePushNotifications(this.dialogService);
             this.subscribePusheAsked = true;
           }

@@ -111,7 +111,7 @@ export class ChatService extends ChatSocketService {
   }
 
   private onVisibilityChange(e: any): void {
-    console.log('visibilitychange', event);
+    console.log('visibilitychange', e);
     if (document.visibilityState === 'visible') {
       console.log('App is active');
       this.userIsActive();
@@ -273,13 +273,20 @@ export class ChatService extends ChatSocketService {
     return confirm(question);
   }
 
+  pushNotificationsAvailable(): boolean {
+    if (!isDevMode() && this.options.user && "Notification" in window) {
+      return true;
+    }
+    return false;
+  }
+
   handlePushNotifications(dialogService: any): void {
     console.log('chat.service handle push notifications');
-    if (!("Notification" in window)) {
-      console.warn('This browser does not support notifications.');
-      console.log('window', window);
-    }
-    if (!isDevMode() && this.options.user && "Notification" in window) {
+    // if (!("Notification" in window)) {
+    //   console.warn('This browser does not support notifications.');
+    //   console.log('window', window);
+    // }
+    if (this.pushNotificationsAvailable()) {
       console.log('asking for notifications...')
       // const user = this.chatService.options.user;
 
@@ -332,6 +339,17 @@ export class ChatService extends ChatSocketService {
           console.error(e);
           hasPushSub.unsubscribe();
         }
+      });
+    } else {
+      const dialogSub: Subscription = dialogService.openDialog({
+        title: $localize `Not available`,
+        content: $localize `Notifications are not available at the moment.`,
+        actions: [
+          {title: $localize `Ok`, value: 'ok', focus: true}
+        ]
+      }).subscribe({
+        next: (value: string) => dialogSub.unsubscribe(),
+        error: (e: any) => dialogSub.unsubscribe()
       });
     }
   }
