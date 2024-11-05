@@ -41,6 +41,16 @@ export class AppComponent implements OnInit, OnDestroy {
   ){}
 
   ngOnInit(): void {
+    // app options
+    const chatOptions = this.chatService.options;
+    if (chatOptions.user) {
+      this.user = chatOptions.user;
+    } else {
+      this.user = this.chatService.createUser();
+    }
+    // login user
+    this.chatService.login(this.user);
+    // set user as active
     this.chatService.userIsActive();
     // if new sw version available, update by reload
     const updateSub: Subscription = this.chatService.isSwUpdate().subscribe({
@@ -66,8 +76,7 @@ export class AppComponent implements OnInit, OnDestroy {
       complete: () => updateSub.unsubscribe()
     })
     
-    // app options
-    const chatOptions = this.chatService.options;
+    
     
     this.onVoices = this.voiceOverService.voices.subscribe({
       next: (voices: SpeechSynthesisVoice[]) => {
@@ -84,7 +93,7 @@ export class AppComponent implements OnInit, OnDestroy {
               } else {
                 this.voiceOverService.selectedVoice = this.voiceOverService.chooseDefaultVoice();
               }
-              this.voiceOverService.speak(`Welcome`);
+              this.voiceOverService.speak($localize `Hi!`);
               chatOptions.voiceOverOptions.voice = this.voiceOverService.selectedVoice ? this.voiceOverService.selectedVoice.name : '';
             }
           }
@@ -120,8 +129,6 @@ export class AppComponent implements OnInit, OnDestroy {
             // this.user.voice = !this.user.voice ? this.voiceOverService.selectedVoice?.name;
 
           }
-          // login user
-          this.chatService.login(this.user);  
         }
         // console.log('voicesSub', voicesSub);
         this.onVoices.unsubscribe();
