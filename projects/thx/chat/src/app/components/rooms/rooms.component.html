@@ -1,14 +1,15 @@
 <div class="welcome">
     <!-- SUBSCRIBED ROOMS -->
-    <div class="subscribed-rooms">
-        @if(getSubscribedRooms().length) {
+    <div></div>
+    <!-- <div class="subscribed-rooms">
+        @if(subscribedRooms.length) {
             <button mat-icon-button (click)="openBottomSheet()" color="warn" class="large">
                 <mat-icon class="material-symbols-outlined" inline="true">mark_unread_chat_alt</mat-icon>
             </button>
         }
-    </div>
+    </div> -->
     <!-- <span class="spacer"></span> -->
-    <h4 i18n [ngStyle]="{color: user.color ? user.color : 'unset'}">Welcome {{user.nickname}}</h4>
+    <h4 i18n [ngStyle]="{color: user.color ? user.color : 'unset'}">Hi! {{user.nickname}}</h4>
     <!-- <span class="spacer"></span> -->
     <button mat-icon-button class="large" [routerLink]="['/settings']">
         <mat-icon
@@ -20,21 +21,65 @@
 </div>
 
 @if (socketConnected) {
-    <!-- CREATE NEW ROOM -->
-    <form class="new-room"[formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
-        <div>
+    <!-- JOIN CHAT -->
+    @if(!newRoomVisible) {
+        <form class="join-room" [formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
             <mat-form-field>
-                <mat-label i18n>Chat Title / link</mat-label>
-                <input formControlName="roomName" matInput placeholder="Ex. Holidays in Rome" value="" autocomplete="off">
+                <mat-label i18n>Join chat</mat-label>
+                <input formControlName="roomName" matInput placeholder="" value="" autocomplete="off">
+                <!-- @if(roomForm.valid) {
+                    <button matSuffix mat-icon-button aria-label="Clear" type="submit">
+                        <mat-icon class="material-symbols-outlined">join</mat-icon>
+                    </button>
+                } -->
+                
             </mat-form-field>
+            @if(roomForm.valid) {
+                <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Join Chat</button>
+            }
+        </form>
+    }
+   
+    <!-- CREATE NEW ROOM -->
+    @if(newRoomVisible) {
+        <form class="new-room" [formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
+            <div>
+                <mat-form-field>
+                    <mat-label i18n>Chat Title</mat-label>
+                    <input formControlName="roomName" matInput placeholder="Ex. Holidays in Rome" value="" autocomplete="off">
+                </mat-form-field>
+                
+                <section>
+                    <mat-checkbox formControlName="public" i18n>Public</mat-checkbox>
+                </section>
+            </div>
             
-            <section>
-                <mat-checkbox formControlName="public" i18n>Public</mat-checkbox>
-            </section>
+            <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Create Chat</button>
+        </form>
+    }
+    <!-- SUBSCRIBED ROOMS -->
+    @if(subscribedRooms.length) {
+        <div class="rooms-list">
+            @for(room of subscribedRooms; track room.id) {
+                <div class="rooms-list-item" [routerLink]="[room.id]">
+                    <div class="chat-icon">
+                        <mat-icon class="material-symbols-outlined">{{room.config.public ? 'public' : 'lock'}}</mat-icon>
+                    </div>
+                    <div class="room-name">{{room.config.roomName}}</div>
+                </div>
+            }
         </div>
-        
-        <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Enter Chat</button>
-    </form>
+        <!-- SHOW CREATE NEW -->
+        <div [ngClass]="{'show-create-new': true, 'open': newRoomVisible}">
+            <button mat-mini-fab color="primary" (click)="toggleNewRoom()">
+                <mat-icon
+                    class="material-symbols-outlined"
+                >{{newRoomVisible ? 'close' : 'add'}}</mat-icon>
+            </button>
+        </div>
+    }
+    
+    
     <!-- AVAILABLE PUBLIC ROOMS -->
     <div class="available-rooms">
         @if(availableRooms.length) {

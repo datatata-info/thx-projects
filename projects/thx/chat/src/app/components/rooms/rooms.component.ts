@@ -43,12 +43,13 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   searchRoomControl: FormControl = new FormControl('');
 
-  subscribedTopics: any;
-  safeUrl: any;
+  // subscribedTopics: any;
+  // safeUrl: any;
 
   availableRooms: Room[] = [];
   filteredRooms!: Observable<Room[]>;
   socketConnected: boolean = false;
+  newRoomVisible: boolean = false;
 
   // subscribtions
   private createRoomSub: Subscription = new Subscription();
@@ -60,6 +61,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
   private onSocketConnectionChange: Subscription = new Subscription();
   private onUserSetSub: Subscription = new Subscription();
   private subscribePusheAsked: boolean = false;
+
+  get subscribedRooms(): Room[] {
+    return this.chatService.getSubscribedRooms();
+  }
 
 
   constructor(
@@ -193,6 +198,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.onUserSetSub.unsubscribe();
   }
 
+  toggleNewRoom(): void {
+    this.newRoomVisible = !this.newRoomVisible;
+  }
+
   openBottomSheet(): void {
     this.bottomSheet.open(SubscribedRoomsMenuComponent);
   }
@@ -243,11 +252,11 @@ export class RoomsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getSubscribedRooms(): Room[] {
-    const rooms = this.chatService.getSubscribedRooms();
-    // console.log('getSubscribedRooms', rooms);
-    return rooms;
-  }
+  // subscribedRooms(): Room[] {
+  //   const rooms = this.chatService.getSubscribedRooms();
+  //   // console.log('getSubscribedRooms', rooms);
+  //   return rooms;
+  // }
 
   log(key: any, value: any): void {
     console.log(key, value);

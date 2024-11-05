@@ -1,6 +1,6 @@
 import { Injectable, isDevMode } from '@angular/core';
-import { User, Room, RoomConfig, RoomMessage } from '@thx/socket';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { User, Room, RoomConfig } from '@thx/socket';
+import { Subject, Subscription } from 'rxjs';
 import { ChatSocketService } from '../chat-socket/chat-socket.service';
 import { ColorService } from '../color/color.service';
 import { EmojiService } from '../emoji/emoji.service';
@@ -16,7 +16,7 @@ interface VoiceOverOptions {
 export interface ChatOptions {
   [key: string]: any,
   user: User | undefined,
-  subscribedRooms: string[],
+  subscribedRooms: Room[],
   voiceOver: boolean,
   voiceOverOptions: VoiceOverOptions, // language, voice
   termsApproved: boolean,
@@ -100,20 +100,27 @@ export class ChatService extends ChatSocketService {
       }
     });
 
-    // In your Angular component or a service
-    document.addEventListener('visibilitychange', (event: any) => {
-      console.log('visibilitychange', event);
-      if (document.visibilityState === 'visible') {
-        console.log('App is active');
-        this.userIsActive();
-        // Handle when app is active (in the foreground)
-      } else {
-        console.log('App is inactive');
-        this.userIsNotActive();
-        // Handle when app is inactive (in the background)
-      }
-    });
+    if (this.options.subscribedRooms && this.options.subscribedRooms.length) {
+      this.subscribedRooms = this.options.subscribedRooms;
+    }
 
+    // In your Angular component or a service
+    // TODO: removeEventListener
+    document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
+
+  }
+
+  private onVisibilityChange(e: any): void {
+    console.log('visibilitychange', event);
+    if (document.visibilityState === 'visible') {
+      console.log('App is active');
+      this.userIsActive();
+      // Handle when app is active (in the foreground)
+    } else {
+      console.log('App is inactive');
+      this.userIsNotActive();
+      // Handle when app is inactive (in the background)
+    }
   }
 
   createUser(): User {
@@ -166,8 +173,6 @@ export class ChatService extends ChatSocketService {
 
     return subject;
   }
-
-  
   
   subscribeRoom(roomId: string): Subject<Room | null> {
     // if room already subscribed
@@ -196,8 +201,15 @@ export class ChatService extends ChatSocketService {
 
   addRoomToSubscribed(room: Room): void {
     // add to options
-    if (!this.options.subscribedRooms.includes(room.id)) {
-      this.options.subscribedRooms.push(room.id);
+    let alreadyInOptions = false;
+    for (const r of this.options.subscribedRooms) {
+      if (r.id === room.id) {
+        alreadyInOptions = true;
+        break;
+      }
+    }
+    if (!alreadyInOptions) {
+      this.options.subscribedRooms.push(room);
       this.updateOptions();
     }
     // if already in subscribed, just return
@@ -228,8 +240,8 @@ export class ChatService extends ChatSocketService {
     }
     // remove from options
     for (let i = 0; i < this.options.subscribedRooms.length; i++) {
-      const id = this.options.subscribedRooms[i];
-      if (id === roomId) {
+      const room = this.options.subscribedRooms[i];
+      if (room.id === roomId) {
         this.options.subscribedRooms.splice(i, 1);
         this.updateOptions();
         break;
@@ -245,6 +257,9 @@ export class ChatService extends ChatSocketService {
   }
 
   getSubscribedRooms(): Room[] {
+    if (!this.subscribedRooms && this.options.subscribedRooms) {
+      this.subscribedRooms = this.options.subscribedRooms;
+    }
     return this.subscribedRooms;
   }
 
@@ -326,7 +341,7 @@ export class ChatService extends ChatSocketService {
     const options = {
       icon: 'icons/icon-192x192.png',
       badge: 'icons/icon-72x72.png',
-      body: $localize `Welcome ${this.user.nickname}`,
+      body: $localize `Hi! ${this.user.nickname}`,
       silent: false
     }
     // Notification constructor is going to be deprecated
