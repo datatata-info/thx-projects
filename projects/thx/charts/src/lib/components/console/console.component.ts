@@ -10,6 +10,8 @@ import { Component } from '@angular/core';
 
 export class ConsoleComponent {
 
+  // TODO: check: https://stackoverflow.com/a/19846113
+
   // logOfConsole: any[] = [];
   // log: any = console.log;
   // warn: any = console.warn;
