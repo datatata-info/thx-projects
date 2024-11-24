@@ -42,9 +42,14 @@ export interface Room {
       if (voice) this.voice = voice;
     }
   }
+
+  // export interface MessageSubject {
+  //   type: string, // eg. message, cmd
+  //   content: string // or any?
+  // }
   
   export interface MessageContent {
-    subject: string | any,
+    subject: string,
     sharedSecret?: string
     // voice?: string
   }
