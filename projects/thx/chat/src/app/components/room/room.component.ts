@@ -325,9 +325,13 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   toggleVoiceOver(): void {
-    this.voiceOverService.toggleActivation();
-    this.voiceOver = this.voiceOverService.activated;
-    this.chatService.options.voiceOver = this.voiceOver;
+    if (this.voiceOverService.selectedVoice) {
+      this.voiceOverService.toggleActivation();
+      this.voiceOver = this.voiceOverService.activated;
+      this.chatService.options.voiceOver = this.voiceOver;
+    } else {
+      this.router.navigate(['/settings']);
+    }
   }
 
   toggleLocalNotifications(): void {
