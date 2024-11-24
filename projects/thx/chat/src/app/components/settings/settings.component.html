@@ -1,15 +1,10 @@
 <h4>
     <mat-icon color="primary" class="material-symbols-outlined" inline="true">settings</mat-icon>&nbsp;
-    <span i18n >Settings</span>
-    <span class="spacer"></span>
-    <button mat-icon-button class="large" (click)="resetChatOptions()">
-        <mat-icon
-            color="primary"
-            class="material-symbols-outlined"
-            inline="true"
-        >reset_settings</mat-icon>
-    </button>
+    <span i18n >Settings</span>    
 </h4>
+@if(appVersion) {
+    <div class="version">v{{appVersion}}</div>
+}
 <form [formGroup]="settingsForm" (ngSubmit)="saveSttings()">
     <div class="nickname">
         <div i18n>Nickname: </div>
@@ -30,11 +25,11 @@
     <!-- show only if notifications are supported by the browser -->
     @if(notificationsSupported()) {
         <div class="notifications">
-            <span i18n> Notifications: </span>
+            <!-- <span i18n> Notifications: </span> -->
             @if(hasPush) {
-                <button mat-flat-button (click)="unsubscribePushNotifications()" type="button">Unsubscribe</button>
+                <button mat-flat-button (click)="unsubscribePushNotifications()" type="button">Unsubscribe Push Notifications</button>
             } @else {
-                <button mat-flat-button (click)="handlePushNotifications()" type="button">Subscribe</button>
+                <button mat-flat-button (click)="handlePushNotifications()" type="button">Subscribe Push Notifications</button>
             }
         </div>
     }
@@ -72,11 +67,22 @@
             </mat-checkbox>
         </section>
     </div>
-    @if(appVersion) {
-        <div class="app-version">App version: v{{appVersion}}</div>
-    }
+
     <div class="settings-controls">
-        <button mat-flat-button type="submit">OK</button>
+        <button
+            mat-flat-button
+            class="large flat-icon"
+            color="warn"
+            (click)="resetChatOptions()"
+            type="button"
+        >
+            <!-- <mat-icon
+                class="material-symbols-outlined"
+                inline="true"
+            >reset_settings</mat-icon> --> Reset Settings
+        </button>
+        <span class="spacer"></span>
+        <button mat-flat-button type="submit">OK</button>    
     </div>
 </form>
 
