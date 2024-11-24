@@ -27,17 +27,19 @@ export class VoiceOverService {
       this.synth.addEventListener('voiceschanged', () => {
         this._voices = this.synth.getVoices();
         this.voices.next(this._voices);
-        this.selectedVoice = this.chooseDefaultVoice();
+        // this.selectedVoice = this.chooseDefaultVoice();
       });
     } else { // else select directly
       this.voices.next(this._voices);
-      this.selectedVoice = this.chooseDefaultVoice();
+      // this.selectedVoice = this.chooseDefaultVoice();
     }
   }
 
   toggleActivation(): void {
     this.activated = !this.activated;
-    if (this.activated) {
+    console.log('toggleActivation selectedVoice', this.selectedVoice);
+    if (this.activated/*  && this.selectedVoice */) {
+      console.log('speak activated', this.selectedVoice);
       this.speak($localize `Voice Over activated`);
     }
   }

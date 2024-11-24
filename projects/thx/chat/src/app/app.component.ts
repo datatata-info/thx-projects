@@ -33,8 +33,8 @@ export class AppComponent implements OnInit, OnDestroy {
   addNotification: RoomMessage | null = null;
 
   constructor(
-    private emojiService: EmojiService,
-    private colorService: ColorService,
+    // private emojiService: EmojiService,
+    // private colorService: ColorService,
     private chatService: ChatService,
     private voiceOverService: VoiceOverService,
     private dialogService: DialogService
@@ -78,48 +78,48 @@ export class AppComponent implements OnInit, OnDestroy {
     
     
     
-    this.onVoices = this.voiceOverService.voices.subscribe({
-      next: (voices: SpeechSynthesisVoice[]) => {
-        if (voices.length) {
-          if (chatOptions.voiceOverOptions.language) {
-            const lang = chatOptions.voiceOverOptions.language;
-            this.voiceOverService.selectedLanguage = lang;
-            if (chatOptions.voiceOverOptions.voice) {
-              const voiceName = chatOptions.voiceOverOptions.voice;
-              const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, lang);
-              console.log('voice on start app', voice);
-              if (voice) {
-                this.voiceOverService.selectedVoice = voice;
-              } else {
-                this.voiceOverService.selectedVoice = this.voiceOverService.chooseDefaultVoice();
-              }
-              this.voiceOverService.speak($localize `Hi!`);
-              chatOptions.voiceOverOptions.voice = this.voiceOverService.selectedVoice ? this.voiceOverService.selectedVoice.name : '';
-            }
-          }
-          if (!chatOptions.user) {
-            this.user = this.chatService.createUser();
-            console.log('chatService.options', this.chatService.options);
-          } else {
-            this.user = chatOptions.user;
-            if (!this.user.voice) {
-              if (chatOptions.voiceOverOptions.voice) {
-                this.user.voice = chatOptions.voiceOverOptions.voice;
-              } else {
-                this.voiceOverService.selectedVoice = this.voiceOverService.chooseDefaultVoice();
-                this.user.voice = this.voiceOverService.selectedVoice?.name;
-              }
-              this.chatService.updateOptions();
-            }
-            // this.user.voice = !this.user.voice ? this.voiceOverService.selectedVoice?.name;
-
-          }
-        }
-        // console.log('voicesSub', voicesSub);
-        this.onVoices.unsubscribe();
-      },
-      error: (e: any) => console.error(e)
-    });
+    // this.onVoices = this.voiceOverService.voices.subscribe({
+    //   next: (voices: SpeechSynthesisVoice[]) => {
+    //     if (voices.length) {
+    //       if (chatOptions.voiceOverOptions.language) {
+    //         const lang = chatOptions.voiceOverOptions.language;
+    //         this.voiceOverService.selectedLanguage = lang;
+    //         if (chatOptions.voiceOverOptions.voice) {
+    //           const voiceName = chatOptions.voiceOverOptions.voice;
+    //           const voice = this.voiceOverService.findVoiceByNameAndLang(voiceName, lang);
+    //           console.log('voice on start app', voice);
+    //           if (voice) {
+    //             this.voiceOverService.selectedVoice = voice;
+    //           } else {
+    //             this.voiceOverService.selectedVoice = this.voiceOverService.chooseDefaultVoice();
+    //           }
+    //           this.voiceOverService.speak($localize `Hi!`);
+    //           chatOptions.voiceOverOptions.voice = this.voiceOverService.selectedVoice ? this.voiceOverService.selectedVoice.name : '';
+    //         }
+    //       }
+    //       if (!chatOptions.user) {
+    //         this.user = this.chatService.createUser();
+    //         console.log('chatService.options', this.chatService.options);
+    //       } else {
+    //         this.user = chatOptions.user;
+    //         if (!this.user.voice) {
+    //           if (chatOptions.voiceOverOptions.voice) {
+    //             this.user.voice = chatOptions.voiceOverOptions.voice;
+    //           } else {
+    //             this.voiceOverService.selectedVoice = this.voiceOverService.chooseDefaultVoice();
+    //             this.user.voice = this.voiceOverService.selectedVoice?.name;
+    //           }
+    //           this.chatService.updateOptions();
+    //         }
+    //         // this.user.voice = !this.user.voice ? this.voiceOverService.selectedVoice?.name;
+// 
+    //       }
+    //     }
+    //     // console.log('voicesSub', voicesSub);
+    //     this.onVoices.unsubscribe();
+    //   },
+    //   error: (e: any) => console.error(e)
+    // });
 
     // internal notifications
     this.onMessageNotification = this.chatService.onMessage.subscribe({
