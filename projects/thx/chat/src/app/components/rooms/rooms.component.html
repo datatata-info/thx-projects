@@ -21,6 +21,19 @@
 </div>
 
 @if (socketConnected) {
+    <!-- SUBSCRIBED ROOMS -->
+    @if(subscribedRooms.length) {
+        <div class="rooms-list">
+            @for(room of subscribedRooms; track room.id) {
+                <div class="rooms-list-item" [routerLink]="[room.id]">
+                    <div class="chat-icon">
+                        <mat-icon class="material-symbols-outlined">{{room.config.public ? 'public' : 'lock'}}</mat-icon>
+                    </div>
+                    <div class="room-name">{{room.config.roomName}}</div>
+                </div>
+            }
+        </div>
+    }
     <!-- JOIN CHAT -->
     @if(!newRoomVisible) {
         <form class="join-room" [formGroup]="roomForm" (ngSubmit)="createAndJoinRoom()">
@@ -57,27 +70,15 @@
             <button mat-flat-button [disabled]="!roomForm.valid" type="submit" i18n>Create Chat</button>
         </form>
     }
-    <!-- SUBSCRIBED ROOMS -->
-    @if(subscribedRooms.length) {
-        <div class="rooms-list">
-            @for(room of subscribedRooms; track room.id) {
-                <div class="rooms-list-item" [routerLink]="[room.id]">
-                    <div class="chat-icon">
-                        <mat-icon class="material-symbols-outlined">{{room.config.public ? 'public' : 'lock'}}</mat-icon>
-                    </div>
-                    <div class="room-name">{{room.config.roomName}}</div>
-                </div>
-            }
-        </div>
-        <!-- SHOW CREATE NEW -->
-        <div [ngClass]="{'show-create-new': true, 'open': newRoomVisible}">
-            <button mat-mini-fab color="primary" (click)="toggleNewRoom()">
-                <mat-icon
-                    class="material-symbols-outlined"
-                >{{newRoomVisible ? 'close' : 'add'}}</mat-icon>
-            </button>
-        </div>
-    }
+    
+     <!-- SHOW CREATE NEW -->
+     <div [ngClass]="{'show-create-new': true, 'open': newRoomVisible}">
+        <button mat-mini-fab color="primary" (click)="toggleNewRoom()">
+            <mat-icon
+                class="material-symbols-outlined"
+            >{{newRoomVisible ? 'close' : 'add'}}</mat-icon>
+        </button>
+    </div>
     
     
     <!-- AVAILABLE PUBLIC ROOMS -->
