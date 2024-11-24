@@ -65,7 +65,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     this.settingsForm = new FormGroup({
       nickname: new FormControl(this.chatOptions.user?.nickname),
       color: new FormControl(this.chatOptions.user?.color),
-      voiceOver: new FormControl(this.chatOptions.voiceOver),
+      voiceOver: new FormControl(this.voiceOverService.activated),
       voiceOverLang: new FormControl(this.chatOptions.voiceOverOptions.language),
       voiceOverVoice: new FormControl(this.chatOptions.voiceOverOptions.voice),
       termsApproved: new FormControl(this.chatOptions.termsApproved)
@@ -74,7 +74,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // voice 
     this.voicesSub = this.voiceOverService.voices.subscribe({
       next: (voices: SpeechSynthesisVoice[]) => {
-        console.log('voices', voices);
+        // console.log('voices', voices);
         if (voices && voices.length) {
           this.voiceList = voices;
           // build available lang list
