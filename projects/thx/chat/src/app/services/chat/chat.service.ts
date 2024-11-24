@@ -231,22 +231,30 @@ export class ChatService extends ChatSocketService {
   }
 
   unsubscribeRoom(roomId: string): void {
-    for (let i = 0; i < this.subscribedRooms.length; i++) {
-      const room = this.subscribedRooms[i];
-      if (room.id === roomId) {
-        this.subscribedRooms.splice(i, 1);
-        break;
-      }
-    }
+    console.log('unsubscribe room', roomId);
+    console.log('options.subscribedRooms', this.options.subscribedRooms);
+    console.log('subscribedRooms', this.subscribedRooms);
     // remove from options
     for (let i = 0; i < this.options.subscribedRooms.length; i++) {
       const room = this.options.subscribedRooms[i];
+      console.log('room in options', room);
       if (room.id === roomId) {
+        console.log('remove from localstorage', room);
         this.options.subscribedRooms.splice(i, 1);
         this.updateOptions();
         break;
       }
     }
+    // remove from subscribedRooms array
+    for (let i = 0; i < this.subscribedRooms.length; i++) {
+      const room = this.subscribedRooms[i];
+      console.log('subscribed room', room);
+      if (room.id === roomId) {
+        this.subscribedRooms.splice(i, 1);
+        break;
+      }
+    }
+    
   }
 
   getSubscribedRoom(roomId: string): Room | null {
