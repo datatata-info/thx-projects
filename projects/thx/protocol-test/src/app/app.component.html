@@ -1,0 +1,43 @@
+<!-- <router-outlet /> -->
+<p>User ID: {{getUser().id}}</p>
+<p>Cert Ready: {{certReady}}</p>
+<p>Socket Connected: {{socketConnected}}</p>
+@if(socketConnected && certReady) {
+  <div>
+    <button (click)="createPublicRoom()">Create Public Room</button>
+  </div>
+}
+
+@if(joinedRooms.length) {
+  <h3>Joined Rooms:</h3>
+  @for(room of joinedRooms; track room.id) {
+    <div class="room">
+      <h4>{{room.id}}</h4>
+      <!-- TODO -->
+      <!-- SEND/RECIEVE ROOM MESSAGE -->
+      <input #message type="text" name="message" [id]="room.id">
+      <button class="send-message" (click)="sendMessageToRoom(room.id, message.value, message)">SEND MESSAGE</button>
+      @if(roomsMessages[room.id]) {
+        <div class="recieved-messages">
+          @for(message of roomsMessages[room.id]; let i = $index; track i){
+            <div class="remote-message">
+              <strong>{{message.body}}</strong> | secure: {{message.secure}} | p2p: {{message.p2p}} | from: {{message.user.id}}
+            </div>
+          }
+        </div>
+      }
+    </div>
+    
+  }
+}
+
+@if(availableRooms.length) {
+  <h3>Available Rooms:</h3>
+  @for(room of availableRooms; track room.id) {
+    @if(!roomIsJoined(room.id)) {
+      <div class="room">
+        <button (click)="joinPublicRoom(room)">Join room {{room.id}}</button>
+      </div>
+    }
+  }
+}
