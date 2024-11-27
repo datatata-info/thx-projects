@@ -1,5 +1,30 @@
 import { v4 as uuidv4 } from 'uuid';
 
+export interface ThxMessage {
+  id: string,
+  user: User,
+  body: any,
+  secure: boolean,
+  p2p: boolean
+}
+
+type ThxMessageParams = {
+  user: User,
+  body: any,
+}
+
+export class ThxMessage {
+  id: string = uuidv4();
+  user!: User;
+  body: any;
+  secure: boolean = false;
+  p2p: boolean = false;
+  constructor(params: ThxMessageParams) {
+    this.user = params.user;
+    this.body = params.body;
+  }
+}
+
 export interface SocketServerConfig {
     host: string,
     path?: string,
@@ -7,39 +32,63 @@ export interface SocketServerConfig {
     useEncryption: boolean
 }
 
+export interface SocketMessage {
+  cmd: string,
+  roomId: string,
+  body: any
+}
+
+export interface PeerMessage {
+  roomId: string,
+  socketId: string,
+  body: any,
+  channel: RTCDataChannel
+}
+
+export interface PeerConnectionObject {
+  connection: RTCPeerConnection,
+  dataChannel: RTCDataChannel | null,
+  publicKey: string | undefined,
+  userId: string | undefined
+}
+
 export interface Room {
     id: string,
     config: RoomConfig,
-    appName: string,
+    // appName: string,
     admin: string,
     size: number,
   }
   
   export interface RoomConfig {
     roomName: string,
-    password: string,
-    timer: number,
+    password?: string,
+    timer?: number,
+    welcomeMessage?: string,
     public: boolean
   }
   
   export interface User {
     id: string,
     nickname: string,
-    color?: string,
-    voice?: string
+    options?: any // app specific options
+    // color?: string,
+    // voice?: string
   }
   
   export class User {
     id!: string;
     nickname!: string;
-    color?: string;
-    voice?: string;
+    options?: any
+    // color?: string;
+    // voice?: string;
   
-    constructor(nickname: string, color?: string, voice?: string) {
+    constructor(nickname: string, options?: any) {
       this.id = uuidv4();
       this.nickname = nickname;
-      this.color = color ? color : '';
-      if (voice) this.voice = voice;
+      if (options) this.options = options;
+      // this.color = color ? color : '';
+      // if (voice) this.voice = voice;
     }
   }
 

@@ -3,3 +3,4 @@
  */
 
 export * from './lib/protocol.service';
+export * from './lib/interfaces';
